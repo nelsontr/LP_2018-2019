@@ -51,6 +51,6 @@ aplica_R1_triplo([X,Y,Z],N_Triplo):- Y=:=X, Z=\=Y, N_Triplo=[X,Y,Z],!.
 % < Descricao >
 %-----------------------------------------------------------------------------
 
-aplica_R1_fila_aux([],[]):- !.  %Caso Terminal
+aplica_R1_fila_aux([],[]):- !.  %Caso Terminal - REFAZER
 aplica_R1_fila_aux([X,Y,Z|Re],[X1,Y1,Z1|R]):- 
     aplica_R1_triplo([X,Y,Z],[X1,Y1,Z1]), aplica_R1_fila_aux(Re,R),!.
