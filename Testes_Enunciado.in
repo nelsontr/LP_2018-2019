@@ -1,9 +1,26 @@
-aplica_R1_triplo([1,_,1],R).
-aplica_R1_triplo([1,1,0],R).
-aplica_R1_triplo([_,0,0],R).
-aplica_R1_triplo([1,_,0],R).
-aplica_R1_triplo([0,0,0],R).
-Fila = [1,_,0,_,1,0], aplica_R1_fila_aux(Fila, N_Fila).
-Fila = [0,_,0,1,1,_], aplica_R1_fila_aux(Fila, N_Fila).
-Fila = [_,_,0,_,1,1], aplica_R1_fila_aux(Fila, N_Fila).
-Fila = [_,_,0,1,1,1], aplica_R1_fila_aux(Fila, N_Fila).
+aplica_R1_triplo([1,_,1],R). %R = [1, 0, 1].
+aplica_R1_triplo([1,1,0],R). %R = [1, 1, 0].
+aplica_R1_triplo([_,0,0],R). %R = [1, 0, 0].
+aplica_R1_triplo([1,_,0],R). %R = [1, _G396, 0].
+aplica_R1_triplo([_,_,_],R). %R = [_, _G396, _].
+aplica_R1_triplo([1,_,_],R). %R = [1, _G396, _].
+aplica_R1_triplo([0,0,0],R). %false
+
+Fila = [1,_,0,_,1,0], aplica_R1_fila_aux(Fila, N_Fila). %Fila = N_Fila, N_Fila = [1, _310, 0, _322, 1, 0].
+Fila = [0,_,0,1,1,_], aplica_R1_fila_aux(Fila, N_Fila). %Fila = [0, _310, 0, 1, 1, _334], N_Fila = [0, 1, 0, 1, 1, 0].
+Fila = [_,_,0,_,1,1], aplica_R1_fila_aux(Fila, N_Fila). %Fila = [_304, _310, 0, _322, 1, 1], N_Fila = [_G555, _G558, 0, 0, 1, 1].
+Fila = [_,_,0,1,1,1], aplica_R1_fila_aux(Fila, N_Fila). %false
+Fila = [_,_,1,1,1,_], aplica_R1_fila_aux(Fila, N_Fila). %false
+
+Fila = [1,_,0,_,1,0], aplica_R1_fila(Fila, N_Fila). %Fila = N_Fila, N_Fila = [1, _310, 0, _322, 1, 0].
+Fila = [0,_,0,1,1,_], aplica_R1_fila(Fila, N_Fila). %Fila = [0, _310, 0, 1, 1, _334], N_Fila = [0, 1, 0, 1, 1, 0].
+Fila = [_,_,0,_,1,1], aplica_R1_fila(Fila, N_Fila). %Fila = [_304, _310, 0, _322, 1, 1], N_Fila = [_304, 1, 0, 0, 1, 1].
+Fila = [_,_,0,1,1,1], aplica_R1_fila(Fila, N_Fila). %false
+
+Fila = [0,_,_,0,1,_], aplica_R2_fila(Fila, N_Fila). %Fila = N_Fila, N_Fila = [0, _310, _316, 0, 1, _334].
+Fila = [0,_,_,0,1,0], aplica_R2_fila(Fila, N_Fila). %Fila = [0, _310, _316, 0, 1, 0], N_Fila = [0, 1, 1, 0, 1, 0].
+Fila = [0,0,_,0,1,0], aplica_R2_fila(Fila, N_Fila). %false
+
+Fila = [1,0,_,_,0,_], aplica_R1_R2_fila(Fila, N_Fila). %Fila = N_Fila, N_Fila = [1, 0, _1452, _1458, 0, _1470].
+Fila = [1,1,_,0,_,_], aplica_R1_R2_fila(Fila, N_Fila). %Fila = [1, 1, _1452, 0, _1464, _1470], N_Fila = [1, 1, 0, 0, 1, 0].
+Fila = [0,0,_,0,1,0], aplica_R1_R2_fila(Fila, N_Fila). %false.
