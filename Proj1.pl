@@ -11,8 +11,6 @@
 %-----------------------------------------------------------------------------
 troca_numero(Num,N_Num):- Num=:=1,!,N_Num=0.
 troca_numero(Num,N_Num):- Num=:=0,!,N_Num=1.
-%troca_numero(Num,N_Num):- var(Num),!,N_Num=Num.
-
 
 
 %----------------------  MAIN PROGRAM  ---------------------------
@@ -28,16 +26,16 @@ aplica_R1_triplo([X,Y,Z],N_Triplo):- var(X), var(Z), !, N_Triplo=[X,Y,Z].
 
 %Casos em que apenas tem uma variavel
 aplica_R1_triplo([X,Y,Z],N_Triplo):- var(X), Y=:=Z, !,
-    troca_numero(Y,N_aux), N_Triplo=[N_aux,Y,Z].
-aplica_R1_triplo([X,Y,Z],N_Triplo):- var(X), N_Triplo=[X,Y,Z], !. 
+  troca_numero(Y,N_aux), N_Triplo=[N_aux,Y,Z].
+aplica_R1_triplo([X,Y,Z],N_Triplo):- var(X), N_Triplo=[X,Y,Z], !.
 
 aplica_R1_triplo([X,Y,Z],N_Triplo):- var(Y), X=:=Z, !,
-    troca_numero(X,N_aux), N_Triplo=[X,N_aux,Z].
-aplica_R1_triplo([X,Y,Z],N_Triplo):- var(Y), N_Triplo=[X,Y,Z], !. 
+  troca_numero(X,N_aux), N_Triplo=[X,N_aux,Z].
+aplica_R1_triplo([X,Y,Z],N_Triplo):- var(Y), N_Triplo=[X,Y,Z], !.
 
 aplica_R1_triplo([X,Y,Z],N_Triplo):- var(Z), Y=:=X, !,
-    troca_numero(Y,N_aux), N_Triplo=[X,Y,N_aux].
-aplica_R1_triplo([X,Y,Z],N_Triplo):- var(Z), N_Triplo=[X,Y,Z], !. 
+  troca_numero(Y,N_aux), N_Triplo=[X,Y,N_aux].
+aplica_R1_triplo([X,Y,Z],N_Triplo):- var(Z), N_Triplo=[X,Y,Z], !.
 
 %Casos que nao tenha uma variavel
 aplica_R1_triplo([X,Y,Z],N_Triplo):- X=:=Z, Y=\=X, N_Triplo=[X,Y,Z],!.
@@ -51,6 +49,20 @@ aplica_R1_triplo([X,Y,Z],N_Triplo):- Y=:=X, Z=\=Y, N_Triplo=[X,Y,Z],!.
 % < Descricao >
 %-----------------------------------------------------------------------------
 
-aplica_R1_fila_aux([],[]):- !.  %Caso Terminal - REFAZER
-aplica_R1_fila_aux([X,Y,Z|Re],[X1,Y1,Z1|R]):- 
-    aplica_R1_triplo([X,Y,Z],[X1,Y1,Z1]), aplica_R1_fila_aux(Re,R),!.
+aplica_R1_fila_aux(Fila,Fila):- length(Fila,Num),Num<3,!. %Caso terminal
+aplica_R1_fila_aux([X,Y,Z|Re],[X1|N_Fila_aux]):-
+  aplica_R1_triplo([X,Y,Z],[X1,Y1,Z1]),
+  append([Y1,Z1],Re,R),
+  aplica_R1_fila_aux(R,N_Fila_aux), !.
+
+%-----------------------------------------------------------------------------
+% aplica_R1_fila(Fila, N_Fila):
+%   -Versao Recursiva
+% < Descricao >
+%-----------------------------------------------------------------------------
+
+aplica_R1_fila(Fila,Fila):- aplica_R1_fila_aux(Fila, N_fila), N_fila==Fila, !.
+aplica_R1_fila(Fila,N_fila):-
+  aplica_R1_fila_aux(Fila, N_fila),
+  %Fila\=N_fila,
+  aplica_R1_fila(N_fila,Novo), N_fila=Novo, !.
