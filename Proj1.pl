@@ -9,8 +9,8 @@
 % troca_numero(Num, N_Num):
 % Pega no Num e troca o valor do bit para N_Num.
 %-----------------------------------------------------------------------------
-troca_numero(Num,N_Num):- Num=:=1,!,N_Num=0.
-troca_numero(Num,N_Num):- Num=:=0,!,N_Num=1.
+troca_numero(Num,0):- Num=:=1, !.
+troca_numero(Num,1):- Num=:=0, !.
 
 %-----------------------------------------------------------------------------
 % numero_elementos(Lst, Bit, Num):
@@ -19,6 +19,7 @@ troca_numero(Num,N_Num):- Num=:=0,!,N_Num=1.
 %-----------------------------------------------------------------------------
 %Caso terminal
 numero_elementos([],_,0):-!.
+
 numero_elementos([X|R],Bit,Num) :-
   not(var(X)), X=:=Bit,
   numero_elementos(R,Bit,N1), Num is N1 + 1,!.
@@ -26,7 +27,7 @@ numero_elementos([_|R],Bit,Num) :- numero_elementos(R,Bit,Num),!.
 
 %-----------------------------------------------------------------------------
 % aplica_R2_fila_aux(Fila, Bit, N_fila):
-% < Descriçao >
+% < Descricao >
 %-----------------------------------------------------------------------------
 %Caso terminal
 aplica_R2_fila_aux([],_,[]):-!.
@@ -43,8 +44,8 @@ aplica_R2_fila_aux([X|R],Bit,[Bit|N_aux]):-
 
 %-----------------------------------------------------------------------------
 % aplica_R1_triplo(Triplo, N_Triplo):
-%   Triplo é uma lista de 3 elementos, em que cada elemento é 0, 1, ou uma
-% variável, significa que N_Triplo é a lista resultante de aplicar a regra 1
+%   Triplo e uma lista de 3 elementos, em que cada elemento e 0, 1, ou uma
+% variavel, significa que N_Triplo e a lista resultante de aplicar a regra 1
 % ao triplo Triplo.
 %-----------------------------------------------------------------------------
 %Casos de ter mais do que uma variavel
@@ -73,8 +74,8 @@ aplica_R1_triplo([X,Y,Z],N_Triplo):- Y=:=X, Z=\=Y, N_Triplo=[X,Y,Z],!.
 %-----------------------------------------------------------------------------
 % ->Versao Recursiva
 % aplica_R1_fila_aux(Fila, N_Fila):
-%   Fila é uma fila (linha ou coluna) de um puzzle, significa que N_Fila é a
-% fila resultante de aplicar a regra 1 à fila Fila, uma só vez.
+%   Fila e uma fila (linha ou coluna) de um puzzle, significa que N_Fila e a
+% fila resultante de aplicar a regra 1 a fila Fila, uma so vez.
 %-----------------------------------------------------------------------------
 %Caso terminal
 aplica_R1_fila_aux(Fila,Fila):- length(Fila,Num),Num<3,!.
@@ -87,8 +88,8 @@ aplica_R1_fila_aux([X,Y,Z|Re],[X1|N_Fila_aux]):-
 %-----------------------------------------------------------------------------
 % ->Versao Recursiva
 % aplica_R1_fila(Fila, N_Fila):
-%   Fila é uma fila (linha ou coluna) de um puzzle, significa que N_Fila é a
-% fila resultante de aplicar a regra 1 à fila Fila.
+%   Fila e uma fila (linha ou coluna) de um puzzle, significa que N_Fila e a
+% fila resultante de aplicar a regra 1 a fila Fila.
 %-----------------------------------------------------------------------------
 %Caso terminal
 aplica_R1_fila(Fila,Fila):- aplica_R1_fila_aux(Fila, N_fila), N_fila==Fila, !.
@@ -98,8 +99,8 @@ aplica_R1_fila(Fila,Novo):- aplica_R1_fila_aux(Fila, N_fila),
 
 %-----------------------------------------------------------------------------
 % aplica_R2_fila(Fila, N_Fila):
-%   Fila é uma fila (linha ou coluna) de um puzzle, significa que N_Fila é a
-% fila resultante de aplicar a regra 2 à fila Fila.
+%   Fila e uma fila (linha ou coluna) de um puzzle, significa que N_Fila e a
+% fila resultante de aplicar a regra 2 a fila Fila.
 %-----------------------------------------------------------------------------
 aplica_R2_fila(Fila,N_Fila):- numero_elementos(Fila,0,Num),
   length(Fila,Na), Num=:=Na/2,
@@ -114,8 +115,8 @@ aplica_R2_fila(Fila,Fila):-
 
 %-----------------------------------------------------------------------------
 % aplica_R1_R2_fila(Fila, N_Fila):
-%   Fila é uma fila (linha ou coluna) de um puzzle, significa que N_Fila é a
-% fila resultante de aplicar a regra 2 à fila Fila.
+%   Fila e uma fila (linha ou coluna) de um puzzle, significa que N_Fila e a
+% fila resultante de aplicar a regra 2 a fila Fila.
 %-----------------------------------------------------------------------------
 aplica_R1_R2_fila(Fila,N_Fila):-
   aplica_R1_fila(Fila,N_R1),aplica_R2_fila(N_R1,N_Fila).
