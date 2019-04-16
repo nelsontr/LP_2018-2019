@@ -49,27 +49,24 @@ aplica_R2_fila_aux([X|R],Bit,[Bit|N_aux]):-
 % ao triplo Triplo.
 %-----------------------------------------------------------------------------
 %Casos de ter mais do que uma variavel
-aplica_R1_triplo([X,Y,Z],N_Triplo):- var(X), var(Y), !, N_Triplo=[X,Y,Z].
-aplica_R1_triplo([X,Y,Z],N_Triplo):- var(Y), var(Z), !, N_Triplo=[X,Y,Z].
-aplica_R1_triplo([X,Y,Z],N_Triplo):- var(X), var(Z), !, N_Triplo=[X,Y,Z].
+aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- var(X), var(Y), !.
+aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- var(Y), var(Z), !.
+aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- var(X), var(Z), !.
 
 %Casos em que apenas tem uma variavel
-aplica_R1_triplo([X,Y,Z],N_Triplo):- var(X), Y=:=Z, !,
-  troca_numero(Y,N_aux), N_Triplo=[N_aux,Y,Z].
-aplica_R1_triplo([X,Y,Z],N_Triplo):- var(X), N_Triplo=[X,Y,Z], !.
+aplica_R1_triplo([X,Y,Z],[N_aux,Y,Z]):- var(X), Y=:=Z, !, troca_numero(Y,N_aux).
+aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- var(X), !.
 
-aplica_R1_triplo([X,Y,Z],N_Triplo):- var(Y), X=:=Z, !,
-  troca_numero(X,N_aux), N_Triplo=[X,N_aux,Z].
-aplica_R1_triplo([X,Y,Z],N_Triplo):- var(Y), N_Triplo=[X,Y,Z], !.
+aplica_R1_triplo([X,Y,Z],[X,N_aux,Z]):- var(Y), X=:=Z, !, troca_numero(X,N_aux).
+aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- var(Y), !.
 
-aplica_R1_triplo([X,Y,Z],N_Triplo):- var(Z), Y=:=X, !,
-  troca_numero(Y,N_aux), N_Triplo=[X,Y,N_aux].
-aplica_R1_triplo([X,Y,Z],N_Triplo):- var(Z), N_Triplo=[X,Y,Z], !.
+aplica_R1_triplo([X,Y,Z],[X,Y,N_aux]):- var(Z), Y=:=X, !, troca_numero(Y,N_aux).
+aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- var(Z), !.
 
 %Casos que nao tenha uma variavel
-aplica_R1_triplo([X,Y,Z],N_Triplo):- X=:=Z, Y=\=X, N_Triplo=[X,Y,Z],!.
-aplica_R1_triplo([X,Y,Z],N_Triplo):- Y=:=Z, X=\=Y, N_Triplo=[X,Y,Z],!.
-aplica_R1_triplo([X,Y,Z],N_Triplo):- Y=:=X, Z=\=Y, N_Triplo=[X,Y,Z],!.
+aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- X=:=Z, Y=\=X, !.
+aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- Y=:=Z, X=\=Y, !.
+aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- Y=:=X, Z=\=Y, !.
 
 %-----------------------------------------------------------------------------
 % ->Versao Recursiva
