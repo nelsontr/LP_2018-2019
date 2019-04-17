@@ -69,7 +69,6 @@ aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- Y=:=Z, X=\=Y, !.
 aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- Y=:=X, Z=\=Y, !.
 
 %-----------------------------------------------------------------------------
-% ->Versao Recursiva
 % aplica_R1_fila_aux(Fila, N_Fila):
 %   Fila e uma fila (linha ou coluna) de um puzzle, significa que N_Fila e a
 % fila resultante de aplicar a regra 1 a fila Fila, uma so vez.
@@ -83,7 +82,6 @@ aplica_R1_fila_aux([X,Y,Z|Re],[X1|N_Fila_aux]):-
   aplica_R1_fila_aux(R,N_Fila_aux), !.
 
 %-----------------------------------------------------------------------------
-% ->Versao Recursiva
 % aplica_R1_fila(Fila, N_Fila):
 %   Fila e uma fila (linha ou coluna) de um puzzle, significa que N_Fila e a
 % fila resultante de aplicar a regra 1 a fila Fila.
@@ -117,3 +115,42 @@ aplica_R2_fila(Fila,Fila):-
 %-----------------------------------------------------------------------------
 aplica_R1_R2_fila(Fila,N_Fila):-
   aplica_R1_fila(Fila,N_R1),aplica_R2_fila(N_R1,N_Fila).
+
+%-----------------------------------------------------------------------------
+% aplica_R1_R2_puzzle(Puz, N_Puz):
+%   Puz e um puzzle, significa que N_Puz e o puzzle resultante de aplicar o
+% predicado aplica_R1_R2_fila, as linhas e as colunas de Puz, por esta ordem.
+%-----------------------------------------------------------------------------
+
+    %PARA COLUNAS FAZER TRANSPOSE DA MATRIZ DADA (PUZ)
+
+%-----------------------------------------------------------------------------
+% inicializa(Puz, N_Puz):
+%   Puz e um puzzle, significa que N_Puz e o puzzle resultante de inicializar
+% o puzzle Puz.
+%-----------------------------------------------------------------------------
+
+
+
+%-----------------------------------------------------------------------------
+% verifica_R3(Puz):
+%   No puzzle Puz todas as linhas sao diferentes entre si e todas as colunas
+% sao diferentes entre si.
+%-----------------------------------------------------------------------------
+
+
+
+%-----------------------------------------------------------------------------
+% propaga_posicoes(Posicoes, Puz, N_Puz):
+%   Posicoes e uma lista de posicoes e Puz e um puzzle, significa que N_Puz e
+% o resultado de propagar, recursivamente, (as mudancas de) as posicoes de
+% Posicoes.
+%-----------------------------------------------------------------------------
+
+
+
+%-----------------------------------------------------------------------------
+% resolve(Puz,Sol):
+%   O Puzzle Sol e (um)a solucao do puzzle Puz. Na obtencao da solucao, deve
+% ser utilizado o algoritmo apresentado na Seccao 1.
+%-----------------------------------------------------------------------------
