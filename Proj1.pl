@@ -122,7 +122,15 @@ aplica_R1_R2_fila(Fila,N_Fila):-
 % predicado aplica_R1_R2_fila, as linhas e as colunas de Puz, por esta ordem.
 %-----------------------------------------------------------------------------
 
-    %PARA COLUNAS FAZER TRANSPOSE DA MATRIZ DADA (PUZ)
+%REFAZER
+aplica_R1_R2_matriz([],[]).
+aplica_R1_R2_matriz([X|R],[Novo|N_aux]):-
+  aplica_R1_R2_matriz(R,N_aux),
+  aplica_R1_R2_fila(X,Novo).
+
+aplica_R1_R2_puzzle(Puz,N_Puz):-
+  aplica_R1_R2_matriz(Puz,N_aux), transpose(N_aux,N_aux1),
+  aplica_R1_R2_matriz(N_aux1,N_aux2), transpose(N_aux2,N_Puz).
 
 %-----------------------------------------------------------------------------
 % inicializa(Puz, N_Puz):
@@ -130,6 +138,11 @@ aplica_R1_R2_fila(Fila,N_Fila):-
 % o puzzle Puz.
 %-----------------------------------------------------------------------------
 
+%REFAZER
+inicializa(Fila,Fila):- aplica_R1_R2_puzzle(Fila, N_fila), N_fila==Fila, !.
+
+inicializa(Fila,Novo):- aplica_R1_R2_puzzle(Fila, N_fila),
+  aplica_R1_R2_puzzle(N_fila,Novo), !.
 
 
 %-----------------------------------------------------------------------------
@@ -137,6 +150,7 @@ aplica_R1_R2_fila(Fila,N_Fila):-
 %   No puzzle Puz todas as linhas sao diferentes entre si e todas as colunas
 % sao diferentes entre si.
 %-----------------------------------------------------------------------------
+
 
 
 
