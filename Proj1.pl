@@ -3,7 +3,7 @@
 % Numero IST: 93743
 %-----------------------------------------------------------------------------
 :- consult(codigo_comum). %Acessar ficheiro disponibilizado
-:- consult(puzzles_publicos).
+:- consult(testes_publicos/puzzles_publicos).
 %----------------------------  Funcoes Auxiliares  ----------------------------
 %-----------------------------------------------------------------------------
 % troca_numero(Num, N_Num):
@@ -87,10 +87,11 @@ aplica_R1_fila_aux([X,Y,Z|Re],[X1|N_Fila_aux]):-
 % fila resultante de aplicar a regra 1 a fila Fila.
 %-----------------------------------------------------------------------------
 %Caso terminal
-aplica_R1_fila(Fila,Fila):- aplica_R1_fila_aux(Fila, N_fila), N_fila==Fila, !.
+aplica_R1_fila(Fila,Fila):-
+  aplica_R1_fila_aux(Fila, N_fila), N_fila==Fila, !.
 
-aplica_R1_fila(Fila,Novo):- aplica_R1_fila_aux(Fila, N_fila),
-  aplica_R1_fila(N_fila,Novo), !.
+aplica_R1_fila(Fila,Novo):-
+  aplica_R1_fila_aux(Fila, N_fila), aplica_R1_fila(N_fila,Novo), !.
 
 %-----------------------------------------------------------------------------
 % aplica_R2_fila(Fila, N_Fila):
@@ -117,17 +118,21 @@ aplica_R1_R2_fila(Fila,N_Fila):-
   aplica_R1_fila(Fila,N_R1),aplica_R2_fila(N_R1,N_Fila).
 
 %-----------------------------------------------------------------------------
+% AUXILIAR
+% aplica_R1_R2_matriz(Puz, N_Puz):
+%   Puz e um puzzle, significa que N_Puz e o puzzle resultante de aplicar o
+% predicado aplica_R1_R2_fila, as linhas de Puz.
+%-----------------------------------------------------------------------------
+%Caso terminal
+aplica_R1_R2_matriz([],[]).
+aplica_R1_R2_matriz([X|R],[Y|N_aux]):-
+  aplica_R1_R2_matriz(R,N_aux), aplica_R1_R2_fila(X,Y).
+
+%-----------------------------------------------------------------------------
 % aplica_R1_R2_puzzle(Puz, N_Puz):
 %   Puz e um puzzle, significa que N_Puz e o puzzle resultante de aplicar o
 % predicado aplica_R1_R2_fila, as linhas e as colunas de Puz, por esta ordem.
 %-----------------------------------------------------------------------------
-
-%REFAZER
-aplica_R1_R2_matriz([],[]).
-aplica_R1_R2_matriz([X|R],[Novo|N_aux]):-
-  aplica_R1_R2_matriz(R,N_aux),
-  aplica_R1_R2_fila(X,Novo).
-
 aplica_R1_R2_puzzle(Puz,N_Puz):-
   aplica_R1_R2_matriz(Puz,N_aux), transpose(N_aux,N_aux1),
   aplica_R1_R2_matriz(N_aux1,N_aux2), transpose(N_aux2,N_Puz).
@@ -137,35 +142,39 @@ aplica_R1_R2_puzzle(Puz,N_Puz):-
 %   Puz e um puzzle, significa que N_Puz e o puzzle resultante de inicializar
 % o puzzle Puz.
 %-----------------------------------------------------------------------------
+%Caso terminal
+inicializa(Fila,Fila):-
+  aplica_R1_R2_puzzle(Fila, N_fila), N_fila==Fila, !.
 
-%REFAZER
-inicializa(Fila,Fila):- aplica_R1_R2_puzzle(Fila, N_fila), N_fila==Fila, !.
-
-inicializa(Fila,Novo):- aplica_R1_R2_puzzle(Fila, N_fila),
+inicializa(Fila,Novo):-
+  aplica_R1_R2_puzzle(Fila, N_fila),
   aplica_R1_R2_puzzle(N_fila,Novo), !.
-
 
 %-----------------------------------------------------------------------------
 % verifica_R3(Puz):
 %   No puzzle Puz todas as linhas sao diferentes entre si e todas as colunas
 % sao diferentes entre si.
 %-----------------------------------------------------------------------------
-room([],[]).
-room([X|Lst1],[Y|Lst2]):- X==Y, room(Lst1,Lst2),!.
-room([X|Lst1],[Y|Lst2]):- var(X),var(Y), room(Lst1,Lst2),!.
 
-aux(_,[]).
-aux(X,[Y|Z]):-
-  not(member(X,Y)), aux(X,Z),!.
-aux(X,[Y|Z]):-
-  member(X,Y),room(X,Y),aux(X,Z),!.
+% Compara se 2 listas têm os mesmos valores (lembrando que _==_ dá false)
+%Caso terminal
+fila_igual([],[]).
+fila_igual([X|Lst1],[Y|Lst2]):- X==Y, fila_igual(Lst1,Lst2),!.
 
-verifica_R3([]).
-verifica_R3([X|R]):-
-  not(member(X,R)),verifica_R3(R),!.
-verifica_R3([X|R]):-
-  member(X,R), aux(X,R), verifica_R3(R),!.
+% Compara o primeiro termo com cada fila na matriz
+%Caso terminal
+fila_igual_matriz(_,[]).
+fila_igual_matriz(X,[Y|Z]):-
+  not(fila_igual(X,Y)), fila_igual_matriz(X,Z),!.
 
+% Pega no primeiro termo e compara com a matriz restante
+%Caso terminal
+verifica_R3_linha([]).
+verifica_R3_linha([X|R]):-
+  fila_igual_matriz(X,R), verifica_R3_linha(R),!.
+
+verifica_R3(Puz):-
+  verifica_R3_linha(Puz), transpose(Puz, N_Puz), verifica_R3_linha(N_Puz),!.
 
 %-----------------------------------------------------------------------------
 % propaga_posicoes(Posicoes, Puz, N_Puz):
