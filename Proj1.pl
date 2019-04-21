@@ -3,7 +3,7 @@
 % Numero IST: 93743
 %-----------------------------------------------------------------------------
 :- consult(codigo_comum). %Acessar ficheiro disponibilizado
-
+:- consult(puzzles_publicos).
 %----------------------------  Funcoes Auxiliares  ----------------------------
 %-----------------------------------------------------------------------------
 % troca_numero(Num, N_Num):
@@ -150,8 +150,21 @@ inicializa(Fila,Novo):- aplica_R1_R2_puzzle(Fila, N_fila),
 %   No puzzle Puz todas as linhas sao diferentes entre si e todas as colunas
 % sao diferentes entre si.
 %-----------------------------------------------------------------------------
+room([],[]).
+room([X|Lst1],[Y|Lst2]):- X==Y, room(Lst1,Lst2),!.
+room([X|Lst1],[Y|Lst2]):- var(X),var(Y), room(Lst1,Lst2),!.
 
+aux(_,[]).
+aux(X,[Y|Z]):-
+  not(member(X,Y)), aux(X,Z),!.
+aux(X,[Y|Z]):-
+  member(X,Y),room(X,Y),aux(X,Z),!.
 
+verifica_R3([]).
+verifica_R3([X|R]):-
+  not(member(X,R)),verifica_R3(R),!.
+verifica_R3([X|R]):-
+  member(X,R), aux(X,R), verifica_R3(R),!.
 
 
 %-----------------------------------------------------------------------------
