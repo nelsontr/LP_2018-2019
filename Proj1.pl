@@ -182,15 +182,17 @@ verifica_R3(Puz):-
 % o resultado de propagar, recursivamente, (as mudancas de) as posicoes de
 % Posicoes.
 %-----------------------------------------------------------------------------
-muda_linha(_,_,[],_,_).
-muda_linha(X,Num1,[Y|R],N_Puz,Novo):-
-  X=\=Num1, Num is Num1+1,write('OP'),muda_linha(X,Num,R,[Y|N_Puz],Novo).
-muda_linha(X,Num1,[Y|R],N_Puz,[Z|N_Puz]):-
-  X==Num1,write('Ok'), aplica_R1_R2_fila(Y,Z),Num is Num1+1,muda_linha(X,Num,R,N_Puz,_),!.
+escolhe_fila(_,[],[],_).
+escolhe_fila(X,[Y|R],N_Puz,Contador):-
+  X=\=Contador, Contador_aux is Contador + 1,
+  escolhe_fila(X,R,[Y|N_Puz],Contador_aux).
+escolhe_fila(X,[Y|R],N_Puz,Contador):-
+  X=:=Contador, Contador_aux is Contador + 1,
+  aplica_R1_R2_fila(Y,Y1),
+  escolhe_fila(X,R,[Y1|N_Puz],Contador_aux).
 
-
-propaga_posicoes([(X,_)|_],Puz,Novo_a):-
-  muda_linha(X,1,Puz,[],Novo), reverse(Novo, Novo_a).
+propaga_posicoes([(X,_)|_],Puz,Novo):-
+  escolhe_fila(X,Puz,Novo,1).
 
 
 %-----------------------------------------------------------------------------
