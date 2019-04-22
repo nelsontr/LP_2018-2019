@@ -183,13 +183,14 @@ verifica_R3(Puz):-
 % Posicoes.
 %-----------------------------------------------------------------------------
 escolhe_fila(_,[],[],_).
-escolhe_fila(X,[Y|R],N_Puz,Contador):-
+escolhe_fila(X,[Y|R],[Y|N_aux],Contador):-
   X=\=Contador, Contador_aux is Contador + 1,
-  escolhe_fila(X,R,[Y|N_Puz],Contador_aux).
-escolhe_fila(X,[Y|R],N_Puz,Contador):-
+  escolhe_fila(X,R,N_aux,Contador_aux), !.
+
+escolhe_fila(X,[Y|R],[Y1|N_aux],Contador):-
   X=:=Contador, Contador_aux is Contador + 1,
   aplica_R1_R2_fila(Y,Y1),
-  escolhe_fila(X,R,[Y1|N_Puz],Contador_aux).
+  escolhe_fila(X,R,N_aux,Contador_aux), !.
 
 propaga_posicoes([(X,_)|_],Puz,Novo):-
   escolhe_fila(X,Puz,Novo,1).
