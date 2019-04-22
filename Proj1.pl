@@ -192,8 +192,14 @@ escolhe_fila(X,[Y|R],[Y1|N_aux],Contador):-
   aplica_R1_R2_fila(Y,Y1),
   escolhe_fila(X,R,N_aux,Contador_aux), !.
 
-propaga_posicoes([(X,_)|_],Puz,Novo):-
-  escolhe_fila(X,Puz,Novo,1).
+
+propaga_posicoes([],_,_).
+
+propaga_posicoes([(X,Y)|R],Puz,Naux):-
+  escolhe_fila(X,Puz,Novo_aux,1), transpose(Novo_aux,Novo_aux_t),
+  escolhe_fila(Y,Novo_aux_t,N_aux,1), transpose(N_aux,Novo),
+  diff(Puz,Novo,Lst),
+  propaga_posicoes([Lst|R],Novo,Naux).
 
 
 %-----------------------------------------------------------------------------
