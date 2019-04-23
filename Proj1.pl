@@ -3,6 +3,7 @@
 % Numero IST: 93743
 %-----------------------------------------------------------------------------
 :- consult(codigo_comum). %Acessar ficheiro disponibilizado
+%:- consult(testes_publicos/puzzles_publicos).
 
 %----------------------------  Funcoes Auxiliares  ----------------------------
 %-----------------------------------------------------------------------------
@@ -182,10 +183,11 @@ verifica_R3(Puz):-
 % o resultado de propagar, recursivamente, (as mudancas de) as posicoes de
 % Posicoes.
 %-----------------------------------------------------------------------------
-diff(_,_,[], [],[]).
+diff(_,_,[], [],[]):-!.
 diff(X,Num, [A|Fila], [B|N_Fila],[(X,Num)|Lst]):-
   var(A), number(B),!, Num1 is Num +1,
   diff(X,Num1,Fila,N_Fila,Lst).
+
 diff(X,Num, [A|Fila], [B|N_Fila],Lst):-
   var(A), var(B), !, Num1 is Num +1,
   diff(X,Num1,Fila,N_Fila,Lst).
@@ -194,14 +196,15 @@ diff(X,Num, [A|Fila], [B|N_Fila],Lst):-
   diff(X,Num1,Fila,N_Fila,Lst).
 
 
-diff_m([],[],[],_).
-diff_m([A|R],[B|R1],[Lst|Laux],Cont):-
+diff_m([],[],[],_):-!.
+diff_m([A|R],[B|R1],L1,Cont):-
   Cont_aux is Cont + 1,
   diff(Cont_aux,1,A,B,Lst),
-  diff_m(R,R1,Laux,Cont_aux).
+  diff_m(R,R1,Laux,Cont_aux),
+  append(Lst,Laux,L1),!.
 %-----------------------------------------
 
-escolhe_fila(_,[],[],_).
+escolhe_fila(_,[],[],_):-!.
 escolhe_fila(X,[Y|R],[Y|N_aux],Contador):-
   X=\=Contador, Contador_aux is Contador + 1,
   escolhe_fila(X,R,N_aux,Contador_aux), !.
@@ -212,10 +215,12 @@ escolhe_fila(X,[Y|R],[Y1|N_aux],Contador):-
   escolhe_fila(X,R,N_aux,Contador_aux), !.
 
 
-propaga_posicoes([],_,_).
-propaga_posicoes([(X,Y)|_],Puz,Novo):-
+propaga_posicoes([],Novo,Novo):-!.
+propaga_posicoes([(X,Y)|R],Puz,N_Puz):-
   escolhe_fila(X,Puz,N_aux,1), transpose(N_aux, N_T_aux),
-  escolhe_fila(Y,N_T_aux,N,1), transpose(N, Novo).
+  escolhe_fila(Y,N_T_aux,N,1), transpose(N, Novo),
+  diff_m(Puz,Novo,Lst,0),
+  append(Lst,R,Lst1), propaga_posicoes(Lst1,Novo,N_Puz).
 
 
 %-----------------------------------------------------------------------------
@@ -223,3 +228,4 @@ propaga_posicoes([(X,Y)|_],Puz,Novo):-
 %   O Puzzle Sol e (um)a solucao do puzzle Puz. Na obtencao da solucao, deve
 % ser utilizado o algoritmo apresentado na Seccao 1.
 %-----------------------------------------------------------------------------
+resolve(_,_).
