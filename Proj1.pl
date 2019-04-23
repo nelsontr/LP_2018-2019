@@ -156,7 +156,7 @@ inicializa(Fila,Novo):-
 % sao diferentes entre si.
 %-----------------------------------------------------------------------------
 
-% Compara se 2 listas têm os mesmos valores (lembrando que _==_ dá false)
+% Compara se 2 listas tem os mesmos valores (lembrando que _==_ da false)
 %Caso terminal
 fila_igual([],[]).
 fila_igual([X|Lst1],[Y|Lst2]):- X==Y, fila_igual(Lst1,Lst2),!.
@@ -182,17 +182,23 @@ verifica_R3(Puz):-
 % o resultado de propagar, recursivamente, (as mudancas de) as posicoes de
 % Posicoes.
 %-----------------------------------------------------------------------------
-diff([], [], _, []).
-diff([X|Fila], [Y|N_Fila], Num, [[(Num,2)]|Lst]):-
-  var(X), number(Y),!, Num1 is Num +1,
-  diff(Fila,N_Fila,Num1,Lst).
-diff([X|Fila], [Y|N_Fila], Num, Lst):-
-  var(X), var(Y), !, Num1 is Num +1,
-  diff(Fila,N_Fila,Num1,Lst).
-diff([X|Fila], [Y|N_Fila], Num, Lst):-
-  number(X), number(Y), !, Num1 is Num +1,
-  diff(Fila,N_Fila,Num1,Lst).
+diff(_,_,[], [],[]).
+diff(X,Num, [A|Fila], [B|N_Fila],[(X,Num)|Lst]):-
+  var(A), number(B),!, Num1 is Num +1,
+  diff(X,Num1,Fila,N_Fila,Lst).
+diff(X,Num, [A|Fila], [B|N_Fila],Lst):-
+  var(A), var(B), !, Num1 is Num +1,
+  diff(X,Num1,Fila,N_Fila,Lst).
+diff(X,Num, [A|Fila], [B|N_Fila],Lst):-
+  number(A), number(B), !, Num1 is Num +1,
+  diff(X,Num1,Fila,N_Fila,Lst).
 
+
+diff_m([],[],[],_).
+diff_m([A|R],[B|R1],[Lst|Laux],Cont):-
+  Cont_aux is Cont + 1,
+  diff(Cont_aux,1,A,B,Lst),
+  diff_m(R,R1,Laux,Cont_aux).
 %-----------------------------------------
 
 escolhe_fila(_,[],[],_).
@@ -207,10 +213,9 @@ escolhe_fila(X,[Y|R],[Y1|N_aux],Contador):-
 
 
 propaga_posicoes([],_,_).
-propaga_posicoes([(X,Y)|R],Puz,Nome):-
-  escolhe_fila(X,Puz,N_aux,1), transpose(N_aux,No_aux),
-  escolhe_fila(Y,No_aux,Novo,1), transpose(Novo,N_novo),
-  propaga_posicoes(R,N_novo,Nome).
+propaga_posicoes([(X,Y)|_],Puz,Novo):-
+  escolhe_fila(X,Puz,N_aux,1), transpose(N_aux, N_T_aux),
+  escolhe_fila(Y,N_T_aux,N,1), transpose(N, Novo).
 
 
 %-----------------------------------------------------------------------------
