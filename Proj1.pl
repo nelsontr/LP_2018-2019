@@ -18,11 +18,10 @@ troca_numero(Num,1):- Num=:=0, !.
 % Pega numa lista Lst e verifica quantos valores iguais ao Bit existe e
 % retorna Num, que e o numero de vezes que Bit esta na lista.
 %-----------------------------------------------------------------------------
-%Caso terminal
 numero_elementos([],_,0):-!.
 
 numero_elementos([X|R],Bit,Num) :-
-  not(var(X)), X=:=Bit,
+  number(X), X=:=Bit,
   numero_elementos(R,Bit,N1), Num is N1 + 1,!.
 numero_elementos([_|R],Bit,Num) :- numero_elementos(R,Bit,Num),!.
 
@@ -30,15 +29,12 @@ numero_elementos([_|R],Bit,Num) :- numero_elementos(R,Bit,Num),!.
 % aplica_R2_fila_aux(Fila, Bit, N_fila):
 % < Descricao >
 %-----------------------------------------------------------------------------
-%Caso terminal
 aplica_R2_fila_aux([],_,[]):-!.
 
 aplica_R2_fila_aux([X|R],Bit,[X|N_aux]):-
-  not(var(X)), %Caso nao unifique, i.e.,caso nao seja uma variavel
-  aplica_R2_fila_aux(R,Bit,N_aux), !.
+  number(X), aplica_R2_fila_aux(R,Bit,N_aux), !.
 aplica_R2_fila_aux([X|R],Bit,[Bit|N_aux]):-
-  var(X),  %Caso seja uma variavel
-  aplica_R2_fila_aux(R,Bit,N_aux), !.
+  var(X), aplica_R2_fila_aux(R,Bit,N_aux), !.
 
 
 %-------------------------------  MAIN PROGRAM  -------------------------------
@@ -50,19 +46,19 @@ aplica_R2_fila_aux([X|R],Bit,[Bit|N_aux]):-
 % ao triplo Triplo.
 %-----------------------------------------------------------------------------
 %Casos de ter mais do que uma variavel
-aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- var(X), var(Y), !.
-aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- var(Y), var(Z), !.
-aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- var(X), var(Z), !.
+aplica_R1_triplo(Fila,Fila):-
+  findall(X,(member(X,Fila), var(X)), Bag),
+  length(Bag,Num), Num>=2, !.
+
+%Caso de ter um 1 e um 0
+aplica_R1_triplo(Fila,Fila):-
+    numero_elementos(Fila,0,Num1),numero_elementos(Fila,1,Num2),
+    Num1=:=Num2, !.
 
 %Casos em que apenas tem uma variavel
 aplica_R1_triplo([X,Y,Z],[N_aux,Y,Z]):- var(X), Y=:=Z, !, troca_numero(Y,N_aux).
-aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- var(X), !.
-
 aplica_R1_triplo([X,Y,Z],[X,N_aux,Z]):- var(Y), X=:=Z, !, troca_numero(X,N_aux).
-aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- var(Y), !.
-
 aplica_R1_triplo([X,Y,Z],[X,Y,N_aux]):- var(Z), Y=:=X, !, troca_numero(Y,N_aux).
-aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- var(Z), !.
 
 %Casos que nao tenha uma variavel
 aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- X=:=Z, Y=\=X, !.
@@ -74,7 +70,6 @@ aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- Y=:=X, Z=\=Y, !.
 %   Fila e uma fila (linha ou coluna) de um puzzle, significa que N_Fila e a
 % fila resultante de aplicar a regra 1 a fila Fila, uma so vez.
 %-----------------------------------------------------------------------------
-%Caso terminal
 aplica_R1_fila_aux(Fila,Fila):- length(Fila,Num),Num<3,!.
 
 aplica_R1_fila_aux([X,Y,Z|Re],[X1|N_Fila_aux]):-
@@ -87,7 +82,6 @@ aplica_R1_fila_aux([X,Y,Z|Re],[X1|N_Fila_aux]):-
 %   Fila e uma fila (linha ou coluna) de um puzzle, significa que N_Fila e a
 % fila resultante de aplicar a regra 1 a fila Fila.
 %-----------------------------------------------------------------------------
-%Caso terminal
 aplica_R1_fila(Fila,Fila):-
   aplica_R1_fila_aux(Fila, N_fila), N_fila==Fila, !.
 
@@ -124,8 +118,8 @@ aplica_R1_R2_fila(Fila,N_Fila):-
 %   Puz e um puzzle, significa que N_Puz e o puzzle resultante de aplicar o
 % predicado aplica_R1_R2_fila, as linhas de Puz.
 %-----------------------------------------------------------------------------
-%Caso terminal
 aplica_R1_R2_matriz([],[]).
+
 aplica_R1_R2_matriz([X|R],[Y|N_aux]):-
   aplica_R1_R2_matriz(R,N_aux), aplica_R1_R2_fila(X,Y).
 
@@ -143,13 +137,13 @@ aplica_R1_R2_puzzle(Puz,N_Puz):-
 %   Puz e um puzzle, significa que N_Puz e o puzzle resultante de inicializar
 % o puzzle Puz.
 %-----------------------------------------------------------------------------
-%Caso terminal
 inicializa(Fila,Fila):-
   aplica_R1_R2_puzzle(Fila, N_fila), N_fila==Fila, !.
 
-inicializa(Fila,Novo):-
+inicializa(Fila,N_Puz):-
   aplica_R1_R2_puzzle(Fila, N_fila),
-  aplica_R1_R2_puzzle(N_fila,Novo), !.
+  aplica_R1_R2_puzzle(N_fila,Novo),
+  inicializa(Novo,N_Puz), !.
 
 %-----------------------------------------------------------------------------
 % verifica_R3(Puz):
