@@ -3,7 +3,7 @@
 % Numero IST: 93743
 %-----------------------------------------------------------------------------
 :- consult(codigo_comum). %Acessar ficheiro disponibilizado
-:- consult(testes_publicos/puzzles_publicos).
+
 %----------------------------  Funcoes Auxiliares  ----------------------------
 %-----------------------------------------------------------------------------
 % troca_numero(Num, N_Num):
@@ -182,6 +182,19 @@ verifica_R3(Puz):-
 % o resultado de propagar, recursivamente, (as mudancas de) as posicoes de
 % Posicoes.
 %-----------------------------------------------------------------------------
+diff([], [], _, []).
+diff([X|Fila], [Y|N_Fila], Num, [[(Num,2)]|Lst]):-
+  var(X), number(Y),!, Num1 is Num +1,
+  diff(Fila,N_Fila,Num1,Lst).
+diff([X|Fila], [Y|N_Fila], Num, Lst):-
+  var(X), var(Y), !, Num1 is Num +1,
+  diff(Fila,N_Fila,Num1,Lst).
+diff([X|Fila], [Y|N_Fila], Num, Lst):-
+  number(X), number(Y), !, Num1 is Num +1,
+  diff(Fila,N_Fila,Num1,Lst).
+
+%-----------------------------------------
+
 escolhe_fila(_,[],[],_).
 escolhe_fila(X,[Y|R],[Y|N_aux],Contador):-
   X=\=Contador, Contador_aux is Contador + 1,
@@ -194,12 +207,10 @@ escolhe_fila(X,[Y|R],[Y1|N_aux],Contador):-
 
 
 propaga_posicoes([],_,_).
-
-propaga_posicoes([(X,Y)|R],Puz,Naux):-
-  escolhe_fila(X,Puz,Novo_aux,1), transpose(Novo_aux,Novo_aux_t),
-  escolhe_fila(Y,Novo_aux_t,N_aux,1), transpose(N_aux,Novo),
-  diff(Puz,Novo,Lst),
-  propaga_posicoes([Lst|R],Novo,Naux).
+propaga_posicoes([(X,Y)|R],Puz,Nome):-
+  escolhe_fila(X,Puz,N_aux,1), transpose(N_aux,No_aux),
+  escolhe_fila(Y,No_aux,Novo,1), transpose(Novo,N_novo),
+  propaga_posicoes(R,N_novo,Nome).
 
 
 %-----------------------------------------------------------------------------
