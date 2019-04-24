@@ -3,15 +3,14 @@
 % Numero IST: 93743
 %-----------------------------------------------------------------------------
 :- consult(codigo_comum). %Acessar ficheiro disponibilizado
-:- consult(testes_publicos/puzzles_publicos).
+%:- consult(testes_publicos/puzzles_publicos).
 
 %----------------------------  Funcoes Auxiliares  ----------------------------
 %-----------------------------------------------------------------------------
 % troca_numero(Num, N_Num):
 % Pega no Num e troca o valor do bit para N_Num.
 %-----------------------------------------------------------------------------
-troca_numero(1,0):- !.
-troca_numero(0,1):- !.
+troca_numero(X,Y):- abs(X-1,Y), !.
 
 %-----------------------------------------------------------------------------
 % mesmo_tipo(A,B):
@@ -237,32 +236,36 @@ propaga_posicoes([(X,Y)|R],Puz,N_Puz):-
 % ser utilizado o algoritmo apresentado na Seccao 1.
 %-----------------------------------------------------------------------------
 induz_digito([], [], _, 1) :- !.
-
-induz_digito([A|Fila],[A|Fila],Bit, 1) :-
-  var(A), A=Bit, !.
+induz_digito([A|Fila],[Bit|Fila],Bit, 1) :-
+  var(A), !.
 induz_digito([A|Fila],[A|N_Fila],Bit, Y1) :-
-  induz_digito(Fila, N_Fila, Bit, Y), Y1 is Y+1, [A|N_Fila]==[A|Fila],!.
+  number(A),
+  induz_digito(Fila, N_Fila, Bit, Y), Y1 is Y+1,!.
 
 
+induz_digito_m([],[],_,0,_):-!.
 
-induz_digito_m([], [], _,0,[]) :- !.
-induz_digito_m([A|Puz], [B|N_Puz], Bit, X, Lst) :-
-  induz_digito(A,B,Bit,Y),length(A,Num), Y>=Num, !,
-  induz_digito_m(Puz, N_Puz, Bit, X1, Lst), X is X1+1.
-
-induz_digito_m([A|Fila], [B|Fila], Bit, X, N) :-
-  induz_digito(A,B,Bit,Y),length(A,Num),Y<Num, !,
-  Novo=[(X,Y)|_], reverse(Novo,N).  %PROBLEMA AQUI
+induz_digito_m([A|R1],[B|R2],Bit,X,Y1):-
+  induz_digito(A,B,Bit,Y), length(A,Num),Y>Num,
+  induz_digito_m(R1,R2,Bit,X1,Y1),X is X1+1.
+induz_digito_m([A|R1],[B|R1],Bit,1,Y):-
+  induz_digito(A,B,Bit,Y), length(A,Num),Y=<Num.
 
 
+resolve([A|Puz],N_aux):-
+  inicializa([A|Puz],N_Puz), verifica_R3(N_Puz),
+  induz_digito_m(N_Puz,N_aux,0,X,_),
+  length(A,Num),X==Num.
 
+resolve([A|Puz],Novo):-
+  inicializa([A|Puz],N_Puz), verifica_R3(N_Puz),
+  induz_digito_m(N_Puz,N_aux,0,X,Y),
+  propaga_posicoes([(X,Y)],N_aux,Sol),
+  verifica_R3(Sol),resolve(Sol,Novo), !.
 
+resolve([A|Puz],Novo):-
+  inicializa([A|Puz],N_Puz), verifica_R3(N_Puz),
+  induz_digito_m(N_Puz,N_aux,1,X,Y),
+  propaga_posicoes([(X,Y)],N_aux,Sol),
+  verifica_R3(Sol),resolve(Sol,Novo), !.
 
-
-
-resolve(Puz,Puz) :- inicializa(Puz,N_Puz), N_Puz==Puz, !.
-
-resolve(Puz,N_aux):-
-  inicializa(Puz,N_Puz), verifica_R3(N_Puz),
-  induz_digito_m(N_Puz,N_aux,0,_,Lst), propaga_posicoes(Lst,N_aux,Sol),
-  verifica_R3(Sol), !.
