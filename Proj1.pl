@@ -3,7 +3,7 @@
 % Numero IST: 93743
 %-----------------------------------------------------------------------------
 :- consult(codigo_comum). %Acessar ficheiro disponibilizado
-%:- consult(testes_publicos/puzzles_publicos).
+:- consult(testes_publicos/puzzles_publicos).
 
 %----------------------------  Funcoes Auxiliares  ----------------------------
 %-----------------------------------------------------------------------------
@@ -52,7 +52,7 @@ aplica_R2_fila_aux([X|R],Bit,[Bit|N_aux]):-
 escolhe_fila(_,[],[],_) :- !.
 
 escolhe_fila(X,[Y|R],[Y|N_aux],Contador) :-
-  X=\=Contador, Contador_aux is Contador + 1,
+  X\==Contador, Contador_aux is Contador + 1,
   escolhe_fila(X,R,N_aux,Contador_aux), !.
 escolhe_fila(X,[Y|R],[Y1|N_aux],Contador):-
   X=:=Contador, Contador_aux is Contador + 1,
@@ -83,7 +83,7 @@ pos_alteradas_matrix([],[],[],_) :- !.
 pos_alteradas_matrix([A|R],[B|R1],L1,X_aux) :-
   X is X_aux + 1,
   pos_alteradas_fila(X,1,A,B,Lst),
-  pos_alteradas_matrix(R,R1,Laux,Cont_aux),
+  pos_alteradas_matrix(R,R1,Laux,X),
   append(Lst,Laux,L1), !.
 
 
@@ -212,7 +212,7 @@ fila_igual_puzzle(X,[Y|Z]):-
 % Pega no primeiro termo e compara com a matriz restante
 verifica_R3_linha([]) :- !.
 verifica_R3_linha([X|R]) :-
-  fila_igual_matriz(X,R), verifica_R3_linha(R),!.
+  fila_igual_puzzle(X,R), verifica_R3_linha(R),!.
 
 verifica_R3(Puz) :-
   verifica_R3_linha(Puz), transpose(Puz, N_Puz),
@@ -236,4 +236,33 @@ propaga_posicoes([(X,Y)|R],Puz,N_Puz):-
 %   O Puzzle Sol e (um)a solucao do puzzle Puz. Na obtencao da solucao, deve
 % ser utilizado o algoritmo apresentado na Seccao 1.
 %-----------------------------------------------------------------------------
-resolve(_,_).
+induz_digito([], [], _, 1) :- !.
+
+induz_digito([A|Fila],[A|Fila],Bit, 1) :-
+  var(A), A=Bit, !.
+induz_digito([A|Fila],[A|N_Fila],Bit, Y1) :-
+  induz_digito(Fila, N_Fila, Bit, Y), Y1 is Y+1, [A|N_Fila]==[A|Fila],!.
+
+
+
+induz_digito_m([], [], _,0,[]) :- !.
+induz_digito_m([A|Puz], [B|N_Puz], Bit, X, Lst) :-
+  induz_digito(A,B,Bit,Y),length(A,Num), Y>=Num, !,
+  induz_digito_m(Puz, N_Puz, Bit, X1, Lst), X is X1+1.
+
+induz_digito_m([A|Fila], [B|Fila], Bit, X, N) :-
+  induz_digito(A,B,Bit,Y),length(A,Num),Y<Num, !,
+  Novo=[(X,Y)|_], reverse(Novo,N).  %PROBLEMA AQUI
+
+
+
+
+
+
+
+resolve(Puz,Puz) :- inicializa(Puz,N_Puz), N_Puz==Puz, !.
+
+resolve(Puz,N_aux):-
+  inicializa(Puz,N_Puz), verifica_R3(N_Puz),
+  induz_digito_m(N_Puz,N_aux,0,_,Lst), propaga_posicoes(Lst,N_aux,Sol),
+  verifica_R3(Sol), !.
