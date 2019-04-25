@@ -45,9 +45,9 @@ cmp_fila_puzzle(X,[Y|R]):-
   \+cmp_filas(X,Y), !, cmp_fila_puzzle(X,R).
 
 %-----------------------------------------------------------------------------
-% substitui_var(Fila, Bit, N_fila):
-%   Pega numa fila e substitui a primeira variavel por Bit. Utilizado tambem
-% para introduzir uma variavel.
+% substitui_var(Fila, Bit, N_fila, Coord-Y):
+%   Retorna N_Fila onde sera Fila substituindo a primeira variavel por Bit.
+% Utilizado tambem para introduzir uma Coord-Y.
 %-----------------------------------------------------------------------------
 substitui_var([], [], _, 1) :- !.
 substitui_var([A|Fila],[Bit|Fila],Bit, 1) :-
@@ -61,11 +61,22 @@ substitui_var([A|Fila],[A|N_Fila],Bit, Y1) :-
 % Pega numa fila e substitui todas as variaveis por Bit
 %-----------------------------------------------------------------------------
 substitui_t_var(Fila,Aux,Bit):-
-	substitui_var(Fila, Aux,Bit,_), cmp_filas(Fila,Aux),!.
-substitui_t_var(Fila,Aux,Bit):-
-  substitui_var(Fila, N_Fila,Bit,_),
-  substitui_t_var(N_Fila,Aux,Bit), !.
+	substitui_var(Fila,Aux,Bit,_), cmp_filas(Fila,Aux),!.
+substitui_t_var(Fila,N_Fila,Bit):-
+  substitui_var(Fila,Aux,Bit,_),
+  substitui_t_var(Aux,N_Fila,Bit), !.
 
+%-----------------------------------------------------------------------------
+% substitui_t_var(Fila, Bit, N_fila):
+% Pega numa fila e substitui todas as variaveis por Bit
+%-----------------------------------------------------------------------------
+substitui_var_puzzle([],[],_,0,_):-!.
+substitui_var_puzzle([A|R1],[B|R2],Bit,X,Y1):-
+  substitui_var(A,B,Bit,Y),
+  length(A,Num), Y>Num, !,
+  substitui_var_puzzle(R1,R2,Bit,X1,Y1), X is X1+1.
+substitui_var_puzzle([A|R1],[B|R1],Bit,1,Y):-
+  substitui_var(A,B,Bit,Y), length(A,Num), Y=<Num, !.
 
 %-------------------------------  MAIN PROGRAM  -------------------------------
 %-----------------------------------------------------------------------------
@@ -80,16 +91,13 @@ aplica_R1_triplo(Fila,Fila):-
   length(Bag,Num), Num>=2, !.
 %Caso de ter um 1 e um 0
 aplica_R1_triplo(Fila,Fila):-
-  conta_elementos(Fila,0,Num1,_),
-  conta_elementos(Fila,1,Num2,_), Num1=:=Num2, !.
-%Casos em que apenas tem uma variavel
-aplica_R1_triplo([X,Y,X],[X,Y1,X]):- var(Y), !, troca_num(X,Y1).
-aplica_R1_triplo([X,Y,Y],[X1,Y,Y]):- var(X), !, troca_num(Y,X1).
-aplica_R1_triplo([X,X,Z],[X,X,Z1]):- var(Z), !, troca_num(X,Z1).
-%Casos que nao tenha uma variavel
-aplica_R1_triplo([X,Y,X],[X,Y,X]):- !.
-aplica_R1_triplo([X,Y,Y],[X,Y,Y]):- !.
-aplica_R1_triplo([X,X,Z],[X,X,Z]):- !.
+  conta_elementos(Fila,0,1,_),
+  conta_elementos(Fila,1,1,_), !.
+%Casos em que apenas tem uma variavel ou nenhuma
+aplica_R1_triplo(Fila,N_Fila):-
+  (Bit=0, conta_elementos(Fila,0,2,_);
+  Bit=1, conta_elementos(Fila,1,2,_)), !,
+  troca_num(Bit,N_Bit), substitui_var(Fila,N_Fila,N_Bit,_).
 
 %-----------------------------------------------------------------------------
 % aplica_R1_fila_aux(Fila, N_Fila):
@@ -108,9 +116,9 @@ aplica_R1_fila_aux([X,Y,Z|Re],[X1|N_Fila_aux]):-
 % fila resultante de aplicar a regra 1 a fila Fila.
 %-----------------------------------------------------------------------------
 aplica_R1_fila(Fila,Fila):-
-  aplica_R1_fila_aux(Fila, N_Fila), cmp_filas(Fila,N_Fila), !.
-aplica_R1_fila(Fila,Novo):-
-  aplica_R1_fila_aux(Fila, N_fila), aplica_R1_fila(N_fila,Novo), !.
+  aplica_R1_fila_aux(Fila,N_Fila), cmp_filas(Fila,N_Fila), !.
+aplica_R1_fila(Fila,N_Fila):-
+  aplica_R1_fila_aux(Fila,N_aux), aplica_R1_fila(N_aux,N_Fila), !.
 
 %-----------------------------------------------------------------------------
 % aplica_R2_fila(Fila, N_Fila):       NOMES
@@ -118,13 +126,13 @@ aplica_R1_fila(Fila,Novo):-
 % fila resultante de aplicar a regra 2 a fila Fila.
 %-----------------------------------------------------------------------------
 aplica_R2_fila(Fila,Fila):-
-  Bit=0, conta_elementos(Fila, Bit, Num, Na), Num<Na/2,
-  Bit=1, conta_elementos(Fila, Bit, Num, Na), Num<Na/2, !.
+  Bit=0, conta_elementos(Fila,Bit,Num,Na), Num<Na/2,
+  Bit=1, conta_elementos(Fila,Bit,Num,Na), Num<Na/2, !.
 
 aplica_R2_fila(Fila,N_Fila):-
-  (Bit=0, conta_elementos(Fila, Bit, Num, Na), Num=:=Na/2;
-  Bit=1, conta_elementos(Fila, Bit, Num, Na), Num=:=Na/2), !,
-  troca_num(Bit,N_Bit), substitui_t_var(Fila, N_Fila, N_Bit).
+  (Bit=0, conta_elementos(Fila,Bit,Num,Na), Num=:=Na/2;
+  Bit=1, conta_elementos(Fila,Bit,Num,Na), Num=:=Na/2), !,
+  troca_num(Bit,N_Bit), substitui_t_var(Fila,N_Fila,N_Bit).
 
 %-----------------------------------------------------------------------------
 % aplica_R1_R2_fila(Fila, N_Fila):
@@ -149,8 +157,8 @@ aplica_R1_R2_aux([X|R],[Y|N_aux]):-
 % predicado aplica_R1_R2_fila, as linhas e as colunas de Puz, por esta ordem.
 %-----------------------------------------------------------------------------
 aplica_R1_R2_puzzle(Puz,N_Puz):-
-  aplica_R1_R2_aux(Puz,N_aux), transpose(N_aux,N_aux1),
-  aplica_R1_R2_aux(N_aux1,N_aux2), transpose(N_aux2,N_Puz), !.
+  aplica_R1_R2_aux(Puz,N_aux1), transpose(N_aux1,N_aux2),
+  aplica_R1_R2_aux(N_aux2,N_aux3), transpose(N_aux3,N_Puz), !.
 
 %-----------------------------------------------------------------------------
 % inicializa(Puz, N_Puz):

@@ -242,22 +242,22 @@ induz_digito([A|Fila],[Bit|Fila],Bit, 1) :-
   var(A), !.
 induz_digito([A|Fila],[A|N_Fila],Bit, Y1) :-
   number(A),
-  induz_digito(Fila, N_Fila, Bit, Y), Y1 is Y+1,!.
+  induz_digito(Fila, N_Fila, Bit, Y), Y1 is Y+1, !.
 
 
 induz_digito_m([],[],_,0,_):-!.
 
 induz_digito_m([A|R1],[B|R2],Bit,X,Y1):-
-  induz_digito(A,B,Bit,Y), length(A,Num),Y>Num,
+  induz_digito(A,B,Bit,Y), length(A,Num),Y>Num, !,
   induz_digito_m(R1,R2,Bit,X1,Y1),X is X1+1.
 induz_digito_m([A|R1],[B|R1],Bit,1,Y):-
-  induz_digito(A,B,Bit,Y), length(A,Num),Y=<Num.
+  induz_digito(A,B,Bit,Y), length(A,Num),Y=<Num, !.
 
 
 resolve([A|Puz],N_aux):-
   inicializa([A|Puz],N_Puz), verifica_R3(N_Puz),
   induz_digito_m(N_Puz,N_aux,0,X,_),
-  length(A,Num),X==Num.
+  length(A,Num),X==Num, !.
 
 resolve([A|Puz],Novo):-
   inicializa([A|Puz],N_Puz), verifica_R3(N_Puz),
