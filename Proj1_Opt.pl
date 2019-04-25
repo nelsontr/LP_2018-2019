@@ -3,7 +3,7 @@
 % Numero IST: 93743
 %-----------------------------------------------------------------------------
 :- consult(codigo_comum). %Acessar ficheiro disponibilizado
-%:- consult(testes_publicos/puzzles_publicos).
+:- consult(testes_publicos/puzzles_publicos).
 
 %----------------------------  Funcoes Auxiliares  ----------------------------
 %-----------------------------------------------------------------------------
@@ -40,10 +40,13 @@ cmp_filas([X|Fila1],[Y|Fila2]):-
 % cmp_puzzles(Lst, Puz):
 % Compara se 1 fila e igual as filas do Puz
 %-----------------------------------------------------------------------------
-cmp_fila_puzzle([],[]):- !.
+cmp_fila_puzzle(_,[]):- !.
 cmp_fila_puzzle(X,[Y|R]):-
   \+cmp_filas(X,Y), !, cmp_fila_puzzle(X,R).
 
+cmp_puzzles([],[]):-!.
+cmp_puzzles([X|Pz1],[Y|Pz2]):-
+  cmp_filas(X,Y), cmp_puzzles(Pz1,Pz2),!.
 %-----------------------------------------------------------------------------
 % substitui_var(Fila, Bit, N_fila, Coord-Y):
 %   Retorna N_Fila onde sera Fila substituindo a primeira variavel por Bit.
@@ -126,8 +129,8 @@ aplica_R1_fila(Fila,N_Fila):-
 % fila resultante de aplicar a regra 2 a fila Fila.
 %-----------------------------------------------------------------------------
 aplica_R2_fila(Fila,Fila):-
-  Bit=0, conta_elementos(Fila,Bit,Num,Na), Num<Na/2,
-  Bit=1, conta_elementos(Fila,Bit,Num,Na), Num<Na/2, !.
+  conta_elementos(Fila,0,Num1,Na), Num1<Na/2,
+  conta_elementos(Fila,1,Num2,Na), Num2<Na/2, !.
 
 aplica_R2_fila(Fila,N_Fila):-
   (Bit=0, conta_elementos(Fila,Bit,Num,Na), Num=:=Na/2;
@@ -166,9 +169,60 @@ aplica_R1_R2_puzzle(Puz,N_Puz):-
 % o puzzle Puz.
 %-----------------------------------------------------------------------------
 inicializa(Fila,Fila):-
-  aplica_R1_R2_puzzle(Fila,N_Fila), cmp_filas(N_Fila,Fila), !.
+  aplica_R1_R2_puzzle(Fila,N_Fila), N_Fila==Fila, !.
 inicializa(Fila,N_Puz):-
-  aplica_R1_R2_puzzle(Fila,N_Fila), !, inicializa(N_Fila,N_Puz).
+  aplica_R1_R2_puzzle(Fila,N_Fila), inicializa(N_Fila,N_Puz), !.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 %-----------------------------------------------------------------------------
 % verifica_R3_aux(Puz):
@@ -213,6 +267,20 @@ pos_alteradas_matrix([A|R],[B|R1],L1,X_aux) :-
   pos_alteradas_matrix(R,R1,Laux,X),
   append(Lst,Laux,L1), !.
 
+
+%-----------------------------------------------------------------------------
+% pos_alteradas_fila(Coord-X,Coord-Y,Fila, N_Fila,Lst):
+%   Vai verificar na fila quais as posicoes que foram alteradas e colocar na
+% lista Lst. Neste caso, Coord-X vai ser constante e Coord-Y vai alterar-se.
+%-----------------------------------------------------------------------------
+pos_alteradas_fila(_,_,[], [],[]) :- !.
+pos_alteradas_fila(X,Num, [A|Fila], [B|N_Fila],Lst) :-
+  mesmo_tipo(A,B), !, Num1 is Num +1,
+  pos_alteradas_fila(X,Num1,Fila,N_Fila,Lst).
+pos_alteradas_fila(X,Num, [A|Fila], [B|N_Fila],[(X,Num)|Lst]) :-
+  \+mesmo_tipo(A,B), !, Num1 is Num +1,
+  pos_alteradas_fila(X,Num1,Fila,N_Fila,Lst).
+
 %-----------------------------------------------------------------------------
 % escolhe_fila(Linha,Puz,N_Puz,Contador):
 %   De acordo com a linha introduzida, escolhe_fila vai a essa fila, e ira
@@ -235,11 +303,9 @@ escolhe_fila(X,[Y|R],[Y1|N_aux],Contador):-
 %   O Puzzle Sol e (um)a solucao do puzzle Puz. Na obtencao da solucao, deve
 % ser utilizado o algoritmo apresentado na Seccao 1.
 %-----------------------------------------------------------------------------
-resolve([A|Puz],N_aux):-
-  inicializa([A|Puz],N_Puz), verifica_R3(N_Puz),
-  substitui_var_puzzle(N_Puz,N_aux,0,X,_),
-  N_Puz==N_aux, !.
-
+resolve(Fila,N_aux):-
+  inicializa(Fila,N_Puz), verifica_R3(N_Puz),
+  substitui_var_puzzle(N_Puz,N_aux,0,_,_), cmp_puzzles(N_Puz,N_aux),!.
 resolve([A|Puz],Novo):-
   inicializa([A|Puz],N_Puz), verifica_R3(N_Puz),
   substitui_var_puzzle(N_Puz,N_aux,0,X,Y),
