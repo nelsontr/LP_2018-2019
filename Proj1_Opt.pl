@@ -186,3 +186,66 @@ verifica_R3_aux([X|R]):-
 verifica_R3(Puz):-
   verifica_R3_aux(Puz),
   transpose(Puz, N_Puz), verifica_R3_aux(N_Puz), !.
+
+%-----------------------------------------------------------------------------
+% propaga_posicoes(Posicoes, Puz, N_Puz):
+%   Posicoes e uma lista de posicoes e Puz e um puzzle, significa que N_Puz e
+% o resultado de propagar, recursivamente, (as mudancas de) as posicoes de
+% Posicoes.
+%-----------------------------------------------------------------------------
+propaga_posicoes([],Novo,Novo) :- !.
+propaga_posicoes([(X,Y)|R],Puz,N_Puz):-
+  escolhe_fila(X,Puz,N_aux,1), transpose(N_aux, N_T_aux),
+  escolhe_fila(Y,N_T_aux,N,1), transpose(N, Novo),
+  pos_alteradas_matrix(Puz,Novo,Lst,0),
+  append(Lst,R,Lst1), propaga_posicoes(Lst1,Novo,N_Puz), !.
+
+%-----------------------------------------------------------------------------
+% pos_alteradas_matrix(Fila, N_Fila,Lst,Coord-X):
+%   Vai verificar no Puzzle quais as posicoes que foram alteradas e colocar na
+% lista Lst. Neste caso, Coord-X vai alterar-se, uma vez que vamos dar a funcao
+% pos_alteradas_fila essa coordenada
+%-----------------------------------------------------------------------------
+pos_alteradas_matrix([],[],[],_) :- !.
+pos_alteradas_matrix([A|R],[B|R1],L1,X_aux) :-
+  X is X_aux + 1,
+  pos_alteradas_fila(X,1,A,B,Lst),
+  pos_alteradas_matrix(R,R1,Laux,X),
+  append(Lst,Laux,L1), !.
+
+%-----------------------------------------------------------------------------
+% escolhe_fila(Linha,Puz,N_Puz,Contador):
+%   De acordo com a linha introduzida, escolhe_fila vai a essa fila, e ira
+% aplicar a regra R1 e R2 a fila. Se nao for igual, aumenta o contador e a linha
+% nao modificada vai se juntar a N_Puz.
+%-----------------------------------------------------------------------------
+escolhe_fila(_,[],[],_):- !.
+
+escolhe_fila(X,[Y|R],[Y|N_aux],Contador):-
+  X\==Contador,!, Contador_aux is Contador + 1,
+  escolhe_fila(X,R,N_aux,Contador_aux).
+
+escolhe_fila(X,[Y|R],[Y1|N_aux],Contador):-
+  X=:=Contador,!, Contador_aux is Contador + 1,
+  aplica_R1_R2_fila(Y,Y1),
+  escolhe_fila(X,R,N_aux,Contador_aux).
+
+%-----------------------------------------------------------------------------
+% resolve(Puz,Sol):
+%   O Puzzle Sol e (um)a solucao do puzzle Puz. Na obtencao da solucao, deve
+% ser utilizado o algoritmo apresentado na Seccao 1.
+%-----------------------------------------------------------------------------
+resolve([A|Puz],N_aux):-
+  inicializa([A|Puz],N_Puz), verifica_R3(N_Puz),
+  substitui_var_puzzle(N_Puz,N_aux,0,X,_),
+  N_Puz==N_aux, !.
+
+resolve([A|Puz],Novo):-
+  inicializa([A|Puz],N_Puz), verifica_R3(N_Puz),
+  substitui_var_puzzle(N_Puz,N_aux,0,X,Y),
+  propaga_posicoes([(X,Y)],N_aux,Sol),resolve(Sol,Novo), !.
+
+resolve([A|Puz],Novo):-
+  inicializa([A|Puz],N_Puz), verifica_R3(N_Puz),
+  substitui_var_puzzle(N_Puz,N_aux,1,X,Y),
+  propaga_posicoes([(X,Y)],N_aux,Sol),resolve(Sol,Novo), !.
