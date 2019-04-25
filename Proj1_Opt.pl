@@ -122,8 +122,8 @@ aplica_R2_fila(Fila,Fila):-
   Bit=1, conta_elementos(Fila, Bit, Num, Na), Num<Na/2, !.
 
 aplica_R2_fila(Fila,N_Fila):-
-  Bit=0, conta_elementos(Fila, Bit, Num, Na), Num=:=Na/2;
-  Bit=1, conta_elementos(Fila, Bit, Num, Na), Num=:=Na/2, !,
+  (Bit=0, conta_elementos(Fila, Bit, Num, Na), Num=:=Na/2;
+  Bit=1, conta_elementos(Fila, Bit, Num, Na), Num=:=Na/2), !,
   troca_num(Bit,N_Bit), substitui_t_var(Fila, N_Fila, N_Bit).
 
 %-----------------------------------------------------------------------------
