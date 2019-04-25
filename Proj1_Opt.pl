@@ -29,20 +29,42 @@ conta_elementos(Lst, Bit, Num):-
     length(Bag, Num), !.
 
 %-----------------------------------------------------------------------------
-% cmp_filas(Lst1, Lst2):
-% Compara se 2 listas tem os mesmos valores (lembrando que _==_ da false)
+% cmp_filas(Fila1, Fila2):
+% Compara se 2 filas tem os mesmos valores (lembrando que _==_ da false)
 %-----------------------------------------------------------------------------
 cmp_filas([],[]):- !.
 cmp_filas([X|Fila1],[Y|Fila2]):-
   mesmo_tipo(X,Y), X==Y, !, cmp_filas(Fila1,Fila2).
 
 %-----------------------------------------------------------------------------
-% cmp_puzzles(Lst1, Lst2):
-% Compara se 2 listas tem os mesmos valores (lembrando que _==_ da false)
+% cmp_puzzles(Lst, Puz):
+% Compara se 1 fila e igual as filas do Puz
 %-----------------------------------------------------------------------------
 cmp_fila_puzzle([],[]):- !.
 cmp_fila_puzzle(X,[Y|R]):-
   \+cmp_filas(X,Y), !, cmp_fila_puzzle(X,R).
+
+%-----------------------------------------------------------------------------
+% substitui_var(Fila, Bit, N_fila):
+%   Pega numa fila e substitui a primeira variavel por Bit. Utilizado tambem
+% para introduzir uma variavel.
+%-----------------------------------------------------------------------------
+substitui_var([], [], _, 1) :- !.
+substitui_var([A|Fila],[Bit|Fila],Bit, 1) :-
+  var(A), !.
+substitui_var([A|Fila],[A|N_Fila],Bit, Y1) :-
+  number(A),
+  substitui_var(Fila, N_Fila, Bit, Y), Y1 is Y+1, !.
+
+%-----------------------------------------------------------------------------
+% substitui_t_var(Fila, Bit, N_fila):
+% Pega numa fila e substitui todas as variaveis por Bit
+%-----------------------------------------------------------------------------
+substitui_t_var(Fila,Aux,Bit):-
+	substitui_var(Fila, Aux,Bit,_), cmp_filas(Fila,Aux),!.
+substitui_t_var(Fila,Aux,Bit):-
+  substitui_var(Fila, N_Fila,Bit,_),
+  substitui_t_var(N_Fila,Aux,Bit), !.
 
 
 %-------------------------------  MAIN PROGRAM  -------------------------------
@@ -61,13 +83,13 @@ aplica_R1_triplo(Fila,Fila):-
   conta_elementos(Fila,0,Num1),
   conta_elementos(Fila,1,Num2), Num1=:=Num2, !.
 %Casos em que apenas tem uma variavel
-aplica_R1_triplo([X,Y,Z],[N_aux,Y,Z]):- var(X), Y=:=Z, !, troca_num(Y,N_aux).
-aplica_R1_triplo([X,Y,Z],[X,N_aux,Z]):- var(Y), X=:=Z, !, troca_num(X,N_aux).
-aplica_R1_triplo([X,Y,Z],[X,Y,N_aux]):- var(Z), Y=:=X, !, troca_num(Y,N_aux).
+aplica_R1_triplo([X,Y,X],[X,Y1,X]):- var(Y), !, troca_num(X,Y1).
+aplica_R1_triplo([X,Y,Y],[X1,Y,Y]):- var(X), !, troca_num(Y,X1).
+aplica_R1_triplo([X,X,Z],[X,X,Z1]):- var(Z), !, troca_num(X,Z1).
 %Casos que nao tenha uma variavel
-aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- X=:=Z, Y=\=X, !.
-aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- Y=:=Z, X=\=Y, !.
-aplica_R1_triplo([X,Y,Z],[X,Y,Z]):- Y=:=X, Z=\=Y, !.
+aplica_R1_triplo([X,Y,X],[X,Y,X]):- !.
+aplica_R1_triplo([X,Y,Y],[X,Y,Y]):- !.
+aplica_R1_triplo([X,X,Z],[X,X,Z]):- !.
 
 %-----------------------------------------------------------------------------
 % aplica_R1_fila_aux(Fila, N_Fila):
@@ -95,20 +117,17 @@ aplica_R1_fila(Fila,Novo):-
 %   Fila e uma fila (linha ou coluna) de um puzzle, significa que N_Fila e a
 % fila resultante de aplicar a regra 2 a fila Fila.
 %-----------------------------------------------------------------------------
+aplica_R2_aux(Fila, Bit, Num, Na):-
+  conta_elementos(Fila,Bit,Num), length(Fila,Na), !.
+
 aplica_R2_fila(Fila,Fila):-
-  numero_elementos(Fila,1,Num1),
-  numero_elementos(Fila,0,Num2),
-  length(Fila,Na), not(Num1>Na/2), not(Num2>Na/2),!.
+  (Bit=0, aplica_R2_aux(Fila, Bit, Num, Na), Num<Na/2,
+  Bit=1, aplica_R2_aux(Fila, Bit, Num, Na), Num<Na/2), !.
 
 aplica_R2_fila(Fila,N_Fila):-
-  numero_elementos(Fila,0,Num),
-  length(Fila,Na), Num=:=Na/2, !,
-  aplica_R2_fila_aux(Fila,1,N_Fila).
-
-aplica_R2_fila(Fila,N_Fila):-
-  numero_elementos(Fila,1,Num),
-  length(Fila,Na), Num=:=Na/2,
-  aplica_R2_fila_aux(Fila,0,N_Fila), !.
+  (Bit=0, aplica_R2_aux(Fila, Bit, Num, Na), Num=:=Na/2 ;
+  Bit=1, aplica_R2_aux(Fila, Bit, Num, Na), Num=:=Na/2), !,
+  troca_num(Bit,N_Bit), substitui_t_var(Fila, N_Fila, N_Bit).
 
 %-----------------------------------------------------------------------------
 % aplica_R1_R2_fila(Fila, N_Fila):
@@ -147,42 +166,18 @@ inicializa(Fila,N_Puz):-
   aplica_R1_R2_puzzle(Fila,N_Fila), !, inicializa(N_Fila,N_Puz).
 
 %-----------------------------------------------------------------------------
-% verifica_R3(Puz):
-%   No puzzle Puz todas as linhas sao diferentes entre si e todas as colunas
-% sao diferentes entre si.
+% verifica_R3_aux(Puz):
+%   Verifica se a primeira linha de um Puz e igual a uma outra linha do mesmo
 %-----------------------------------------------------------------------------
 verifica_R3_aux([]):- !.
 verifica_R3_aux([X|R]):-
   cmp_fila_puzzle(X,R), verifica_R3_aux(R), !.
 
+%-----------------------------------------------------------------------------
+% verifica_R3(Puz):
+%   No puzzle Puz todas as linhas sao diferentes entre si e todas as colunas
+% sao diferentes entre si.
+%-----------------------------------------------------------------------------
 verifica_R3(Puz):-
   verifica_R3_aux(Puz),
   transpose(Puz, N_Puz), verifica_R3_aux(N_Puz), !.
-
-
-
-
-
-
-%-----------------------------------------------------------------------------
-% substitui_var(Fila, Bit, N_fila):
-%   Pega numa fila e substitui a primeira variavel por Bit. Utilizado tambem
-% para introduzir uma variavel.
-%-----------------------------------------------------------------------------
-substitui_var([], [], _, 1) :- !.
-substitui_var([A|Fila],[Bit|Fila],Bit, 1) :-
-  var(A), !.
-substitui_var([A|Fila],[A|N_Fila],Bit, Y1) :-
-  number(A),
-  substitui_var(Fila, N_Fila, Bit, Y), Y1 is Y+1,!.
-
-%-----------------------------------------------------------------------------
-% substitui_t_var(Fila, Bit, N_fila):
-% Pega numa fila e substitui todas as variaveis por Bit
-%-----------------------------------------------------------------------------
-substitui_t_var([],[],_) :- !.
-
-substitui_t_var([X|R], [X|N_aux], Bit):-
-  number(X), substitui_t_var(R,N_aux,Bit),!.
-substitui_t_var([X|R], [Bit|N_aux], Bit):-
-  var(X), substitui_t_var(R, N_aux, Bit), !.
