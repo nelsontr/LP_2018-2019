@@ -42,22 +42,24 @@ aplica_R2_fila_aux([X|R],Bit,[X|N_aux]):-
 aplica_R2_fila_aux([X|R],Bit,[Bit|N_aux]):-
   var(X), aplica_R2_fila_aux(R,Bit,N_aux), !.
 
+%-------------------------------------------------------------------------------------------------------
+
 %-----------------------------------------------------------------------------
 % escolhe_fila(Linha,Puz,N_Puz,Contador):
 %   De acordo com a linha introduzida, escolhe_fila vai a essa fila, e ira
 % aplicar a regra R1 e R2 a fila. Se nao for igual, aumenta o contador e a linha
 % nao modificada vai se juntar a N_Puz.
 %-----------------------------------------------------------------------------
-escolhe_fila(_,[],[],_) :- !.
+escolhe_fila(_,[],[],_):- !.
 
-escolhe_fila(X,[Y|R],[Y|N_aux],Contador) :-
-  X\==Contador, Contador_aux is Contador + 1,
-  escolhe_fila(X,R,N_aux,Contador_aux), !.
+escolhe_fila(X,[Y|R],[Y|N_aux],Contador):-
+  X\==Contador,!, Contador_aux is Contador + 1,
+  escolhe_fila(X,R,N_aux,Contador_aux).
+
 escolhe_fila(X,[Y|R],[Y1|N_aux],Contador):-
-  X=:=Contador, Contador_aux is Contador + 1,
+  X=:=Contador,!, Contador_aux is Contador + 1,
   aplica_R1_R2_fila(Y,Y1),
-  %Quando estiver na posicao introduzida, aplica a regra R1 e R2 a fila.
-  escolhe_fila(X,R,N_aux,Contador_aux), !.
+  escolhe_fila(X,R,N_aux,Contador_aux).
 
 %-----------------------------------------------------------------------------
 % pos_alteradas_fila(Coord-X,Coord-Y,Fila, N_Fila,Lst):
@@ -69,7 +71,7 @@ pos_alteradas_fila(X,Num, [A|Fila], [B|N_Fila],Lst) :-
   mesmo_tipo(A,B), !, Num1 is Num +1,
   pos_alteradas_fila(X,Num1,Fila,N_Fila,Lst).
 pos_alteradas_fila(X,Num, [A|Fila], [B|N_Fila],[(X,Num)|Lst]) :-
-  not(mesmo_tipo(A,B)), !, Num1 is Num +1,
+  \+mesmo_tipo(A,B), !, Num1 is Num +1,
   pos_alteradas_fila(X,Num1,Fila,N_Fila,Lst).
 
 %-----------------------------------------------------------------------------
@@ -268,4 +270,3 @@ resolve([A|Puz],Novo):-
   induz_digito_m(N_Puz,N_aux,1,X,Y),
   propaga_posicoes([(X,Y)],N_aux,Sol),
   verifica_R3(Sol),resolve(Sol,Novo), !.
-
