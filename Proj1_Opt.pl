@@ -24,9 +24,9 @@ mesmo_tipo(A,B) :- number(A), !, number(B).
 % Pega numa lista Lst e verifica quantos valores iguais ao Bit existe e
 % retorna Num, que e o numero de vezes que Bit esta na lista.
 %-----------------------------------------------------------------------------
-conta_elementos(Lst, Bit, Num):-
-    findall(X, (member(X,Lst), X==Bit), Bag),
-    length(Bag, Num), !.
+conta_elementos(Fila, Bit, Num, Na):-
+    findall(X, (member(X,Fila), X==Bit), Bag),
+    length(Fila, Na), length(Bag, Num), !.
 
 %-----------------------------------------------------------------------------
 % cmp_filas(Fila1, Fila2):
@@ -80,8 +80,8 @@ aplica_R1_triplo(Fila,Fila):-
   length(Bag,Num), Num>=2, !.
 %Caso de ter um 1 e um 0
 aplica_R1_triplo(Fila,Fila):-
-  conta_elementos(Fila,0,Num1),
-  conta_elementos(Fila,1,Num2), Num1=:=Num2, !.
+  conta_elementos(Fila,0,Num1,_),
+  conta_elementos(Fila,1,Num2,_), Num1=:=Num2, !.
 %Casos em que apenas tem uma variavel
 aplica_R1_triplo([X,Y,X],[X,Y1,X]):- var(Y), !, troca_num(X,Y1).
 aplica_R1_triplo([X,Y,Y],[X1,Y,Y]):- var(X), !, troca_num(Y,X1).
@@ -113,20 +113,17 @@ aplica_R1_fila(Fila,Novo):-
   aplica_R1_fila_aux(Fila, N_fila), aplica_R1_fila(N_fila,Novo), !.
 
 %-----------------------------------------------------------------------------
-% aplica_R2_fila(Fila, N_Fila):         REFAZER
+% aplica_R2_fila(Fila, N_Fila):       NOMES
 %   Fila e uma fila (linha ou coluna) de um puzzle, significa que N_Fila e a
 % fila resultante de aplicar a regra 2 a fila Fila.
 %-----------------------------------------------------------------------------
-aplica_R2_aux(Fila, Bit, Num, Na):-
-  conta_elementos(Fila,Bit,Num), length(Fila,Na), !.
-
 aplica_R2_fila(Fila,Fila):-
-  (Bit=0, aplica_R2_aux(Fila, Bit, Num, Na), Num<Na/2,
-  Bit=1, aplica_R2_aux(Fila, Bit, Num, Na), Num<Na/2), !.
+  Bit=0, conta_elementos(Fila, Bit, Num, Na), Num<Na/2,
+  Bit=1, conta_elementos(Fila, Bit, Num, Na), Num<Na/2, !.
 
 aplica_R2_fila(Fila,N_Fila):-
-  (Bit=0, aplica_R2_aux(Fila, Bit, Num, Na), Num=:=Na/2 ;
-  Bit=1, aplica_R2_aux(Fila, Bit, Num, Na), Num=:=Na/2), !,
+  Bit=0, conta_elementos(Fila, Bit, Num, Na), Num=:=Na/2;
+  Bit=1, conta_elementos(Fila, Bit, Num, Na), Num=:=Na/2, !,
   troca_num(Bit,N_Bit), substitui_t_var(Fila, N_Fila, N_Bit).
 
 %-----------------------------------------------------------------------------
