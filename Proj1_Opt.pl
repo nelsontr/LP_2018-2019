@@ -238,8 +238,8 @@ verifica_R3_aux([X|R]):-
 % sao diferentes entre si.
 %-----------------------------------------------------------------------------
 verifica_R3(Puz):-
-  verifica_R3_aux(Puz),
-  transpose(Puz, N_Puz), verifica_R3_aux(N_Puz), !.
+  verifica_R3_aux(Puz), transpose(Puz, N_Puz),
+  verifica_R3_aux(N_Puz), !.
 
 %-----------------------------------------------------------------------------
 % propaga_posicoes(Posicoes, Puz, N_Puz):
@@ -288,13 +288,11 @@ pos_alteradas_fila(X,Num, [A|Fila], [B|N_Fila],[(X,Num)|Lst]) :-
 % nao modificada vai se juntar a N_Puz.
 %-----------------------------------------------------------------------------
 escolhe_fila(_,[],[],_):- !.
-
 escolhe_fila(X,[Y|R],[Y|N_aux],Contador):-
-  X\==Contador,!, Contador_aux is Contador + 1,
+  X\==Contador, !, Contador_aux is Contador + 1,
   escolhe_fila(X,R,N_aux,Contador_aux).
-
 escolhe_fila(X,[Y|R],[Y1|N_aux],Contador):-
-  X=:=Contador,!, Contador_aux is Contador + 1,
+  X=:=Contador, !, Contador_aux is Contador + 1,
   aplica_R1_R2_fila(Y,Y1),
   escolhe_fila(X,R,N_aux,Contador_aux).
 
@@ -304,14 +302,14 @@ escolhe_fila(X,[Y|R],[Y1|N_aux],Contador):-
 % ser utilizado o algoritmo apresentado na Seccao 1.
 %-----------------------------------------------------------------------------
 resolve(Fila,N_aux):-
-  inicializa(Fila,N_Puz), verifica_R3(N_Puz),
-  substitui_var_puzzle(N_Puz,N_aux,0,_,_), cmp_puzzles(N_Puz,N_aux),!.
-resolve([A|Puz],Novo):-
-  inicializa([A|Puz],N_Puz), verifica_R3(N_Puz),
-  substitui_var_puzzle(N_Puz,N_aux,0,X,Y),
-  propaga_posicoes([(X,Y)],N_aux,Sol),resolve(Sol,Novo), !.
+  inicializa(Fila,N_Puz),verifica_R3(N_Puz),
+  substitui_var_puzzle(N_Puz,N_aux,0,_,_),cmp_puzzles(N_Puz,N_aux), !.
 
-resolve([A|Puz],Novo):-
-  inicializa([A|Puz],N_Puz), verifica_R3(N_Puz),
+resolve(Puz,Novo):-
+  inicializa(Puz,N_Puz),verifica_R3(N_Puz),
+  (substitui_var_puzzle(N_Puz,N_aux,0,X,Y),
+  propaga_posicoes([(X,Y)],N_aux,Sol),
+  resolve(Sol,Novo);
   substitui_var_puzzle(N_Puz,N_aux,1,X,Y),
-  propaga_posicoes([(X,Y)],N_aux,Sol),resolve(Sol,Novo), !.
+  propaga_posicoes([(X,Y)],N_aux,Sol),
+  resolve(Sol,Novo)), !.
