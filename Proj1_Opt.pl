@@ -3,7 +3,7 @@
 % Numero IST: 93743
 %-----------------------------------------------------------------------------
 :- consult(codigo_comum). %Acessar ficheiro disponibilizado
-:- consult(testes_publicos/puzzles_publicos).
+%:- consult(testes_publicos/puzzles_publicos).
 
 %----------------------------  Funcoes Auxiliares  ----------------------------
 %-----------------------------------------------------------------------------
@@ -80,6 +80,56 @@ substitui_var_puzzle([A|R1],[B|R2],Bit,X,Y1):-
   substitui_var_puzzle(R1,R2,Bit,X1,Y1), X is X1+1.
 substitui_var_puzzle([A|R1],[B|R1],Bit,1,Y):-
   substitui_var(A,B,Bit,Y), length(A,Num), Y=<Num, !.
+
+%-----------------------------------------------------------------------------
+% verifica_R3_aux(Puz):
+%   Verifica se a primeira linha de um Puz e igual a uma outra linha do mesmo
+%-----------------------------------------------------------------------------
+verifica_R3_aux([]):- !.
+verifica_R3_aux([X|R]):-
+  cmp_fila_puzzle(X,R), verifica_R3_aux(R), !.
+
+%-----------------------------------------------------------------------------
+% pos_alteradas_fila(Coord-X,Coord-Y,Fila, N_Fila,Lst):
+%   Vai verificar na fila quais as posicoes que foram alteradas e colocar na
+% lista Lst. Neste caso, Coord-X vai ser constante e Coord-Y vai alterar-se.
+%-----------------------------------------------------------------------------
+pos_alteradas_fila(_,_,[], [],[]) :- !.
+pos_alteradas_fila(X,Num, [A|Fila], [B|N_Fila],Lst) :-
+  mesmo_tipo(A,B), !, Num1 is Num +1,
+  pos_alteradas_fila(X,Num1,Fila,N_Fila,Lst).
+pos_alteradas_fila(X,Num, [A|Fila], [B|N_Fila],[(X,Num)|Lst]) :-
+  \+mesmo_tipo(A,B), !, Num1 is Num +1,
+  pos_alteradas_fila(X,Num1,Fila,N_Fila,Lst).
+
+%-----------------------------------------------------------------------------
+% pos_alteradas_matrix(Fila, N_Fila,Lst,Coord-X):
+%   Vai verificar no Puzzle quais as posicoes que foram alteradas e colocar na
+% lista Lst. Neste caso, Coord-X vai alterar-se, uma vez que vamos dar a funcao
+% pos_alteradas_fila essa coordenada
+%-----------------------------------------------------------------------------
+pos_alteradas_matrix([],[],[],_) :- !.
+pos_alteradas_matrix([A|R],[B|R1],L1,X_aux) :-
+  X is X_aux + 1,
+  pos_alteradas_fila(X,1,A,B,Lst),
+  pos_alteradas_matrix(R,R1,Laux,X),
+  append(Lst,Laux,L1), !.
+
+%-----------------------------------------------------------------------------
+% escolhe_fila(Linha,Puz,N_Puz,Contador):
+%   De acordo com a linha introduzida, escolhe_fila vai a essa fila, e ira
+% aplicar a regra R1 e R2 a fila. Se nao for igual, aumenta o contador e a linha
+% nao modificada vai se juntar a N_Puz.
+%-----------------------------------------------------------------------------
+escolhe_fila(_,[],[],_):- !.
+escolhe_fila(X,[Y|R],[Y|N_aux],Contador):-
+  X\==Contador, !, Contador_aux is Contador + 1,
+  escolhe_fila(X,R,N_aux,Contador_aux).
+escolhe_fila(X,[Y|R],[Y1|N_aux],Contador):-
+  X=:=Contador, !, Contador_aux is Contador + 1,
+  aplica_R1_R2_fila(Y,Y1),
+  escolhe_fila(X,R,N_aux,Contador_aux).
+
 
 %-------------------------------  MAIN PROGRAM  -------------------------------
 %-----------------------------------------------------------------------------
@@ -169,68 +219,9 @@ aplica_R1_R2_puzzle(Puz,N_Puz):-
 % o puzzle Puz.
 %-----------------------------------------------------------------------------
 inicializa(Fila,Fila):-
-  aplica_R1_R2_puzzle(Fila,N_Fila), N_Fila==Fila, !.
+  aplica_R1_R2_puzzle(Fila,N_Fila), cmp_puzzles(Fila,N_Fila), !.
 inicializa(Fila,N_Puz):-
   aplica_R1_R2_puzzle(Fila,N_Fila), inicializa(N_Fila,N_Puz), !.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-%-----------------------------------------------------------------------------
-% verifica_R3_aux(Puz):
-%   Verifica se a primeira linha de um Puz e igual a uma outra linha do mesmo
-%-----------------------------------------------------------------------------
-verifica_R3_aux([]):- !.
-verifica_R3_aux([X|R]):-
-  cmp_fila_puzzle(X,R), verifica_R3_aux(R), !.
 
 %-----------------------------------------------------------------------------
 % verifica_R3(Puz):
@@ -255,61 +246,19 @@ propaga_posicoes([(X,Y)|R],Puz,N_Puz):-
   append(Lst,R,Lst1), propaga_posicoes(Lst1,Novo,N_Puz), !.
 
 %-----------------------------------------------------------------------------
-% pos_alteradas_matrix(Fila, N_Fila,Lst,Coord-X):
-%   Vai verificar no Puzzle quais as posicoes que foram alteradas e colocar na
-% lista Lst. Neste caso, Coord-X vai alterar-se, uma vez que vamos dar a funcao
-% pos_alteradas_fila essa coordenada
-%-----------------------------------------------------------------------------
-pos_alteradas_matrix([],[],[],_) :- !.
-pos_alteradas_matrix([A|R],[B|R1],L1,X_aux) :-
-  X is X_aux + 1,
-  pos_alteradas_fila(X,1,A,B,Lst),
-  pos_alteradas_matrix(R,R1,Laux,X),
-  append(Lst,Laux,L1), !.
-
-
-%-----------------------------------------------------------------------------
-% pos_alteradas_fila(Coord-X,Coord-Y,Fila, N_Fila,Lst):
-%   Vai verificar na fila quais as posicoes que foram alteradas e colocar na
-% lista Lst. Neste caso, Coord-X vai ser constante e Coord-Y vai alterar-se.
-%-----------------------------------------------------------------------------
-pos_alteradas_fila(_,_,[], [],[]) :- !.
-pos_alteradas_fila(X,Num, [A|Fila], [B|N_Fila],Lst) :-
-  mesmo_tipo(A,B), !, Num1 is Num +1,
-  pos_alteradas_fila(X,Num1,Fila,N_Fila,Lst).
-pos_alteradas_fila(X,Num, [A|Fila], [B|N_Fila],[(X,Num)|Lst]) :-
-  \+mesmo_tipo(A,B), !, Num1 is Num +1,
-  pos_alteradas_fila(X,Num1,Fila,N_Fila,Lst).
-
-%-----------------------------------------------------------------------------
-% escolhe_fila(Linha,Puz,N_Puz,Contador):
-%   De acordo com a linha introduzida, escolhe_fila vai a essa fila, e ira
-% aplicar a regra R1 e R2 a fila. Se nao for igual, aumenta o contador e a linha
-% nao modificada vai se juntar a N_Puz.
-%-----------------------------------------------------------------------------
-escolhe_fila(_,[],[],_):- !.
-escolhe_fila(X,[Y|R],[Y|N_aux],Contador):-
-  X\==Contador, !, Contador_aux is Contador + 1,
-  escolhe_fila(X,R,N_aux,Contador_aux).
-escolhe_fila(X,[Y|R],[Y1|N_aux],Contador):-
-  X=:=Contador, !, Contador_aux is Contador + 1,
-  aplica_R1_R2_fila(Y,Y1),
-  escolhe_fila(X,R,N_aux,Contador_aux).
-
-%-----------------------------------------------------------------------------
 % resolve(Puz,Sol):
 %   O Puzzle Sol e (um)a solucao do puzzle Puz. Na obtencao da solucao, deve
 % ser utilizado o algoritmo apresentado na Seccao 1.
 %-----------------------------------------------------------------------------
-resolve(Fila,N_aux):-
-  inicializa(Fila,N_Puz),verifica_R3(N_Puz),
-  substitui_var_puzzle(N_Puz,N_aux,0,_,_),cmp_puzzles(N_Puz,N_aux), !.
+resolve(Fila,N_Puz):-
+  substitui_var_puzzle(Fila,N_Puz,0,_,_), cmp_puzzles(Fila,N_Puz), !.
 
 resolve(Puz,Novo):-
   inicializa(Puz,N_Puz),verifica_R3(N_Puz),
   (substitui_var_puzzle(N_Puz,N_aux,0,X,Y),
   propaga_posicoes([(X,Y)],N_aux,Sol),
-  resolve(Sol,Novo);
+  resolve(Sol,Novo)
+        ;
   substitui_var_puzzle(N_Puz,N_aux,1,X,Y),
   propaga_posicoes([(X,Y)],N_aux,Sol),
   resolve(Sol,Novo)), !.
