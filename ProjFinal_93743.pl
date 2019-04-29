@@ -3,54 +3,60 @@
 % Numero IST: 93743
 %-----------------------------------------------------------------------------
 :- consult(codigo_comum). %Acessar ficheiro disponibilizado
-%:- consult(testes_publicos/puzzles_publicos).
 
 %----------------------------  Funcoes Auxiliares  ----------------------------
 %-----------------------------------------------------------------------------
 % troca_num(Num, N_Num):
-% Pega no Num e troca o valor do bit para N_Num.
+%   Pega no Num e troca o valor do bit para N_Num (0 para 1, 1 para 0).
 %-----------------------------------------------------------------------------
 troca_num(X,Y):- abs(X-1,Y), !.
 
 %-----------------------------------------------------------------------------
 % mesmo_tipo(A,B):
-% Verdade se A e B forem do mesmo tipo, i.e, se ambos sao numeros ou variaveis
+%   E verdade se A e B forem do mesmo tipo, i.e, se ambos sao numeros ou
+% se ambos sao variaveis.
 %-----------------------------------------------------------------------------
 mesmo_tipo(A,B) :- var(A), !, var(B).
 mesmo_tipo(A,B) :- number(A), !, number(B).
 
 %-----------------------------------------------------------------------------
-% numero_elementos(Lst, Bit, Num):
-% Pega numa lista Lst e verifica quantos valores iguais ao Bit existe e
-% retorna Num, que e o numero de vezes que Bit esta na lista.
+% conta_elementos(Fila, Bit, Num, Tamanho):
+%   Pega numa Fila e retorna Num, que e o numero de vezes que Bit esta na lista,
+% juntamente com o tamanho da Fila.
 %-----------------------------------------------------------------------------
-conta_elementos(Fila, Bit, Num, Na):-
+conta_elementos(Fila, Bit, Num, Tamanho):-
     findall(X, (member(X,Fila), X==Bit), Bag),
-    length(Fila, Na), length(Bag, Num), !.
+    length(Fila, Tamanho), length(Bag, Num), !.
 
 %-----------------------------------------------------------------------------
 % cmp_filas(Fila1, Fila2):
-% Compara se 2 filas tem os mesmos valores (lembrando que _==_ da false)
+% Compara se 2 filas sao iguais, i.e, se sao do mesmo tipo e iguais.
+% (lembrando que _3==_4 da false)
 %-----------------------------------------------------------------------------
 cmp_filas([],[]):- !.
-cmp_filas([X|Fila1],[Y|Fila2]):-
-  mesmo_tipo(X,Y), X==Y, !, cmp_filas(Fila1,Fila2).
+cmp_filas([A|Fila1],[B|Fila2]):-
+  mesmo_tipo(A,B), A==B, !, cmp_filas(Fila1,Fila2).
 
 %-----------------------------------------------------------------------------
-% cmp_puzzles(Lst, Puz):
-% Compara se 1 fila e igual as filas do Puz
+% cmp_fila_puzzle(Fila, Puz):
+% Compara se 1 fila e igual as filas restantes do Puz.
 %-----------------------------------------------------------------------------
 cmp_fila_puzzle(_,[]):- !.
 cmp_fila_puzzle(X,[Y|R]):-
-  \+cmp_filas(X,Y), !, cmp_fila_puzzle(X,R).
+  \+cmp_filas(X,Y), !, cmp_fila_puzzle(A,R).
 
-cmp_puzzles([],[]):-!.
-cmp_puzzles([X|Pz1],[Y|Pz2]):-
-  cmp_filas(X,Y), cmp_puzzles(Pz1,Pz2),!.
 %-----------------------------------------------------------------------------
-% substitui_var(Fila, Bit, N_fila, Coord-Y):
+% cmp_puzzles(Fila, Puz):
+% Compara se 2 Puzzles sao iguais, linha por linha.
+%-----------------------------------------------------------------------------
+cmp_puzzles([],[]):-!.
+cmp_puzzles([X|Puzzle1],[Y|Puzzle2]):-
+  cmp_filas(X,Y), cmp_puzzles(Puzzle1,Puzzle2),!.
+
+%-----------------------------------------------------------------------------
+% substitui_var(Fila, N_Fila, Bit, Coord-Y):
 %   Retorna N_Fila onde sera Fila substituindo a primeira variavel por Bit.
-% Utilizado tambem para introduzir uma Coord-Y.
+% Utilizado tambem para modificar so quando chegar a Coord-Y.
 %-----------------------------------------------------------------------------
 substitui_var([], [], _, 1) :- !.
 substitui_var([A|Fila],[Bit|Fila],Bit, 1) :-
@@ -60,34 +66,15 @@ substitui_var([A|Fila],[A|N_Fila],Bit, Y1) :-
   substitui_var(Fila, N_Fila, Bit, Y), Y1 is Y+1, !.
 
 %-----------------------------------------------------------------------------
-% substitui_t_var(Fila, Bit, N_fila):
-% Pega numa fila e substitui todas as variaveis por Bit
+% substitui_t_var(Fila, N_Fila, Bit):
+% Pega numa Fila e retorna N_Fila, que e a substituicao de todas as variaveis
+% por Bit.
 %-----------------------------------------------------------------------------
-substitui_t_var(Fila,Aux,Bit):-
-	substitui_var(Fila,Aux,Bit,_), cmp_filas(Fila,Aux),!.
+substitui_t_var(Fila,N_Fila,Bit):-
+	substitui_var(Fila,N_Fila,Bit,_), cmp_filas(Fila,N_Fila),!.
 substitui_t_var(Fila,N_Fila,Bit):-
   substitui_var(Fila,Aux,Bit,_),
   substitui_t_var(Aux,N_Fila,Bit), !.
-
-%-----------------------------------------------------------------------------
-% substitui_t_var(Fila, Bit, N_fila):
-% Pega numa fila e substitui todas as variaveis por Bit
-%-----------------------------------------------------------------------------
-substitui_var_puzzle([],[],_,0,_):-!.
-substitui_var_puzzle([A|R1],[B|R2],Bit,X,Y1):-
-  substitui_var(A,B,Bit,Y),
-  length(A,Num), Y>Num, !,
-  substitui_var_puzzle(R1,R2,Bit,X1,Y1), X is X1+1.
-substitui_var_puzzle([A|R1],[B|R1],Bit,1,Y):-
-  substitui_var(A,B,Bit,Y), length(A,Num), Y=<Num, !.
-
-%-----------------------------------------------------------------------------
-% verifica_R3_aux(Puz):
-%   Verifica se a primeira linha de um Puz e igual a uma outra linha do mesmo
-%-----------------------------------------------------------------------------
-verifica_R3_aux([]):- !.
-verifica_R3_aux([X|R]):-
-  cmp_fila_puzzle(X,R), verifica_R3_aux(R), !.
 
 %-----------------------------------------------------------------------------
 % pos_alteradas_fila(Coord-X,Coord-Y,Fila, N_Fila,Lst):
@@ -95,12 +82,12 @@ verifica_R3_aux([X|R]):-
 % lista Lst. Neste caso, Coord-X vai ser constante e Coord-Y vai alterar-se.
 %-----------------------------------------------------------------------------
 pos_alteradas_fila(_,_,[], [],[]) :- !.
-pos_alteradas_fila(X,Num, [A|Fila], [B|N_Fila],Lst) :-
-  mesmo_tipo(A,B), !, Num1 is Num +1,
-  pos_alteradas_fila(X,Num1,Fila,N_Fila,Lst).
-pos_alteradas_fila(X,Num, [A|Fila], [B|N_Fila],[(X,Num)|Lst]) :-
-  \+mesmo_tipo(A,B), !, Num1 is Num +1,
-  pos_alteradas_fila(X,Num1,Fila,N_Fila,Lst).
+pos_alteradas_fila(X,Y, [A|Fila], [B|N_Fila],Lst) :-
+  mesmo_tipo(A,B), !, Y1 is Y +1,
+  pos_alteradas_fila(X,Y1,Fila,N_Fila,Lst).
+pos_alteradas_fila(X,Y, [A|Fila], [B|N_Fila],[(X,Num)|Lst]) :-
+  \+mesmo_tipo(A,B), !, Y1 is Y +1,
+  pos_alteradas_fila(X,Y1,Fila,N_Fila,Lst).
 
 %-----------------------------------------------------------------------------
 % pos_alteradas_matrix(Fila, N_Fila,Lst,Coord-X):
