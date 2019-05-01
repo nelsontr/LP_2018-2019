@@ -89,16 +89,18 @@ substitui_t_var(Fila,N_Fila,Bit):-
 % substitui_t_var(Fila, Bit, N_fila):
 % Pega numa fila e substitui todas as variaveis por Bit
 %-----------------------------------------------------------------------------
-substitui_var_puzzle(_,[],[],0,_):-!.
+induz(_,[],[],0,_):-!.
 
-substitui_var_puzzle(X,Puz,NPuz,Bit,Lst):-
+induz(X,Puz,NPuz,Bit,Lst):-
   nth1(X,Puz,Fila), substitui_var(Fila,N_Fila,Bit),
-  cmp_filas(Fila,N_Fila), Xaux is X+1,
-  substitui_var_puzzle(Xaux,Puz,NPuz,Bit,Lst),!.
+  conta_var_Fila(Fila,N1), conta_var_Fila(N_Fila,N2),
+  N2==N1, Xaux is X+1,
+  induz(Xaux,Puz,NPuz,Bit,Lst),!.
 
-substitui_var_puzzle(X,Puz,NPuz,Bit,Lst):-
+induz(X,Puz,NPuz,Bit,Lst):-
   nth1(X,Puz,Fila), substitui_var(Fila,N_Fila,Bit),
-  \+cmp_filas(Fila,N_Fila), mat_muda_linha(Puz,X,N_Fila,N_Puz),
+  conta_var_Fila(Fila,N1), conta_var_Fila(N_Fila,N2),
+  N2 is N1+1, mat_muda_linha(Puz,X,N_Fila,N_Puz),
   escolhe_fila(X,N_Puz,NPuz,Lst),!.
 
 
@@ -266,11 +268,11 @@ resolve(Puz,Puz):-
 
 resolve(Puz,Novo):-
   inicializa(Puz,N_Puz),verifica_R3(N_Puz),
-  substitui_var_puzzle(1,N_Puz,N_aux,0,Lst),
+  induz(1,N_Puz,N_aux,0,Lst),
   propaga_posicoes(Lst,N_aux,Sol),
   resolve(Sol,Novo), !.
 resolve(Puz,Novo):-
   inicializa(Puz,N_Puz),verifica_R3(N_Puz),
-  substitui_var_puzzle(1,N_Puz,N_aux,1,Lst),
+  induz(1,N_Puz,N_aux,1,Lst),
   propaga_posicoes(Lst,N_aux,Sol),
   resolve(Sol,Novo), !.
