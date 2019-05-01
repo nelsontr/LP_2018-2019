@@ -77,6 +77,18 @@ substitui_t_var(Fila,N_Fila,Bit):-
   substitui_t_var(Aux,N_Fila,Bit), !.
 
 %-----------------------------------------------------------------------------
+% substitui_t_var(Fila, Bit, N_fila):
+% Pega numa fila e substitui todas as variaveis por Bit
+%-----------------------------------------------------------------------------
+substitui_var_puzzle([],[],_,0,_):-!.
+substitui_var_puzzle([A|R1],[B|R2],Bit,X,Y1):-
+  substitui_var(A,B,Bit,Y),
+  length(A,Num), Y>Num, !,
+  substitui_var_puzzle(R1,R2,Bit,X1,Y1), X is X1+1.
+substitui_var_puzzle([A|R1],[B|R1],Bit,1,Y):-
+  substitui_var(A,B,Bit,Y), length(A,Num), Y=<Num, !.
+
+%-----------------------------------------------------------------------------
 % pos_alteradas_fila(Coord-X,Coord-Y,Fila, N_Fila,Lst):
 %   Vai verificar na fila quais as posicoes que foram alteradas e colocar na
 % lista Lst. Neste caso, Coord-X vai ser constante e Coord-Y vai alterar-se.
@@ -101,22 +113,6 @@ pos_alteradas_matrix([A|R],[B|R1],L1,X_aux) :-
   pos_alteradas_fila(X,1,A,B,Lst),
   pos_alteradas_matrix(R,R1,Laux,X),
   append(Lst,Laux,L1), !.
-
-%-----------------------------------------------------------------------------
-% escolhe_fila(Linha,Puz,N_Puz,Contador):
-%   De acordo com a linha introduzida, escolhe_fila vai a essa fila, e ira
-% aplicar a regra R1 e R2 a fila. Se nao for igual, aumenta o contador e a linha
-% nao modificada vai se juntar a N_Puz.
-%-----------------------------------------------------------------------------
-escolhe_fila(_,[],[],_):- !.
-escolhe_fila(X,[Y|R],[Y|N_aux],Contador):-
-  X\==Contador, !, Contador_aux is Contador + 1,
-  escolhe_fila(X,R,N_aux,Contador_aux).
-escolhe_fila(X,[Y|R],[Y1|N_aux],Contador):-
-  X=:=Contador, !, Contador_aux is Contador + 1,
-  aplica_R1_R2_fila(Y,Y1),
-  escolhe_fila(X,R,N_aux,Contador_aux).
-
 
 %-------------------------------  MAIN PROGRAM  -------------------------------
 %-----------------------------------------------------------------------------
@@ -225,11 +221,16 @@ verifica_R3(Puz):-
 % o resultado de propagar, recursivamente, (as mudancas de) as posicoes de
 % Posicoes.
 %-----------------------------------------------------------------------------
+propaga(X,Puz,N_Puz):-
+  nth1(X,Puz,Linha),aplica_R1_R2_fila(Linha,N_linha),
+  mat_muda_linha(Puz,X,N_linha,N_Puz),!.
+
 propaga_posicoes([],Novo,Novo) :- !.
 propaga_posicoes([(X,Y)|R],Puz,N_Puz):-
-  escolhe_fila(X,Puz,N_aux,1), transpose(N_aux, N_T_aux),
-  escolhe_fila(Y,N_T_aux,N,1), transpose(N, Novo),
-  pos_alteradas_matrix(Puz,Novo,Lst,0),
+  propaga(X,Puz, N_aux), mat_transposta(N_aux, N_T_aux),
+  propaga(Y,N_T_aux,Novo), mat_transposta(Novo, N_Puz1),
+
+  pos_alteradas_matrix(Puz,N_Puz1,Lst,0),
   append(Lst,R,Lst1), propaga_posicoes(Lst1,Novo,N_Puz), !.
 
 %-----------------------------------------------------------------------------
@@ -237,6 +238,9 @@ propaga_posicoes([(X,Y)|R],Puz,N_Puz):-
 %   O Puzzle Sol e (um)a solucao do puzzle Puz. Na obtencao da solucao, deve
 % ser utilizado o algoritmo apresentado na Seccao 1.
 %-----------------------------------------------------------------------------
+/*iduz():-
+  mat_ref(Puz,())
+*/
 resolve(Fila,N_Puz):-
   substitui_var_puzzle(Fila,N_Puz,_,_,_), cmp_puzzles(Fila,N_Puz), !.
 
