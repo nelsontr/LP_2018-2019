@@ -28,6 +28,11 @@ conta_elementos_Fila(Fila, Bit, Num, Tamanho):-
     findall(X, (member(X,Fila), X==Bit), Bag),
     length(Fila, Tamanho), length(Bag, Num), !.
 
+
+conta_var_Fila(Fila,Num1):-
+  findall(Y,(member(Y,Fila),var(Y)), Bag),
+  length(Bag,Num1), !.
+
 conta_var_Puz(Puz,Num1):-
   findall(Y,(member(X,Puz),member(Y,X),var(Y)),Bag),
   length(Bag,Num1), !.
@@ -84,17 +89,20 @@ substitui_t_var(Fila,N_Fila,Bit):-
 % substitui_t_var(Fila, Bit, N_fila):
 % Pega numa fila e substitui todas as variaveis por Bit
 %-----------------------------------------------------------------------------
-substitui_var_puzzle([],[],0):-!.
+substitui_var_puzzle(_,[],[],0,_):-!.
 
-substitui_var_puzzle([A|Puz],[A1|Puz],Bit):-
-  findall(X, (member(X,A), var(X)), Bag),
-  length(Bag,Num), Num\==0,
-  substitui_var(A,A1,Bit), !.
-substitui_var_puzzle([A|Puz],[A|N_Puz],Bit):-
-  findall(X, (member(X,A), var(X)), Bag),
-  length(Bag,Num), Num==0,
-  substitui_var_puzzle(Puz,N_Puz,Bit), !.
+substitui_var_puzzle(X,Puz,NPuz,Bit,Lst):-
+  nth1(X,Puz,Fila), substitui_var(Fila,N_Fila,Bit),
+  cmp_filas(Fila,N_Fila), Xaux is X+1,
+  substitui_var_puzzle(Xaux,Puz,NPuz,Bit,Lst),!.
 
+substitui_var_puzzle(X,Puz,NPuz,Bit,Lst):-
+  nth1(X,Puz,Fila), substitui_var(Fila,N_Fila,Bit),
+  \+cmp_filas(Fila,N_Fila), mat_muda_linha(Puz,X,N_Fila,N_Puz),
+  escolhe_fila(X,N_Puz,NPuz,Lst),!.
+
+
+%substitui_var_puzzle(1,Puz,NPuz,Bit,Lst).
 /*substitui_var_puzzle([],[],_,0,_):-!.
 substitui_var_puzzle([A|R1],[B|R2],Bit,X,Y1):-
   substitui_var(A,B,Bit), !,
@@ -258,12 +266,11 @@ resolve(Puz,Puz):-
 
 resolve(Puz,Novo):-
   inicializa(Puz,N_Puz),verifica_R3(N_Puz),
-
-  (substitui_var_puzzle(N_Puz,N_aux,0,X,Y),
-
-  propaga_posicoes([(X,Y)],N_aux,Sol),
-  resolve(Sol,Novo)
-        ;
-  substitui_var_puzzle(N_Puz,N_aux,1,X,Y),
-  propaga_posicoes([(X,Y)],N_aux,Sol),
-  resolve(Sol,Novo)), !.
+  substitui_var_puzzle(1,N_Puz,N_aux,0,Lst),
+  propaga_posicoes(Lst,N_aux,Sol),
+  resolve(Sol,Novo), !.
+resolve(Puz,Novo):-
+  inicializa(Puz,N_Puz),verifica_R3(N_Puz),
+  substitui_var_puzzle(1,N_Puz,N_aux,1,Lst),
+  propaga_posicoes(Lst,N_aux,Sol),
+  resolve(Sol,Novo), !.
