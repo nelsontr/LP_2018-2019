@@ -28,7 +28,6 @@ conta_elementos_Fila(Fila, Bit, Num, Tamanho):-
     findall(X, (member(X,Fila), X==Bit), Bag),
     length(Fila, Tamanho), length(Bag, Num), !.
 
-
 conta_var_Fila(Fila,Num1):-
   findall(Y,(member(Y,Fila),var(Y)), Bag),
   length(Bag,Num1), !.
@@ -89,29 +88,20 @@ substitui_t_var(Fila,N_Fila,Bit):-
 % substitui_t_var(Fila, Bit, N_fila):
 % Pega numa fila e substitui todas as variaveis por Bit
 %-----------------------------------------------------------------------------
-induz(_,[],[],0,_):-!.
+induz(_,[],[],_,_):-!.
+induz(_,Puz,Puz,_,[]):- conta_var_Puz(Puz,Num),Num==0,!.
 
 induz(X,Puz,NPuz,Bit,Lst):-
   nth1(X,Puz,Fila), substitui_var(Fila,N_Fila,Bit),
   conta_var_Fila(Fila,N1), conta_var_Fila(N_Fila,N2),
   N2==N1, Xaux is X+1,
-  induz(Xaux,Puz,NPuz,Bit,Lst),!.
+  induz(Xaux,Puz,NPuz,Bit,Lst), !.
 
 induz(X,Puz,NPuz,Bit,Lst):-
   nth1(X,Puz,Fila), substitui_var(Fila,N_Fila,Bit),
   conta_var_Fila(Fila,N1), conta_var_Fila(N_Fila,N2),
-  N2 is N1+1, mat_muda_linha(Puz,X,N_Fila,N_Puz),
-  escolhe_fila(X,N_Puz,NPuz,Lst),!.
-
-
-%substitui_var_puzzle(1,Puz,NPuz,Bit,Lst).
-/*substitui_var_puzzle([],[],_,0,_):-!.
-substitui_var_puzzle([A|R1],[B|R2],Bit,X,Y1):-
-  substitui_var(A,B,Bit), !,
-  substitui_var_puzzle(R1,R2,Bit,X1,Y1), X is X1+1.
-substitui_var_puzzle([A|R1],[B|R1],Bit,1,Y):-
-  substitui_var(A,B,Bit), length(A,Num), Y=<Num, !.*/
-
+  N1 is N2+1, mat_muda_linha(Puz,X,N_Fila,N_Puz),
+  escolhe_fila(X,N_Puz,NPuz,Lst), !.
 
 %-----------------------------------------------------------------------------
 % pos_alteradas_fila(Coord-X,Coord-Y,Fila, N_Fila,Lst):
@@ -123,7 +113,6 @@ pos_alteradas_fila(X,Y, [A|Fila], [B|N_Fila],Lst_aux) :-
   Y1 is Y +1,
   (\+mesmo_tipo(A,B), Lst_aux=[(X,Y)|Lst]; Lst_aux=Lst),
   pos_alteradas_fila(X,Y1,Fila,N_Fila,Lst), !.
-
 %-----------------------------------------------------------------------------
 % escolhe_fila(Linha,Puz,N_Puz,Contador):
 %   De acordo com a linha introduzida, escolhe_fila vai a essa fila, e ira
