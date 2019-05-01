@@ -28,7 +28,7 @@ conta_elementos_Fila(Fila, Bit, Num, Tamanho):-
     findall(X, (member(X,Fila), X==Bit), Bag),
     length(Fila, Tamanho), length(Bag, Num), !.
 
-conta_elementos_Puz(Puz,Num1):-
+conta_var_Puz(Puz,Num1):-
   findall(Y,(member(X,Puz),member(Y,X),var(Y)),Bag),
   length(Bag,Num1), !.
 
@@ -84,12 +84,23 @@ substitui_t_var(Fila,N_Fila,Bit):-
 % substitui_t_var(Fila, Bit, N_fila):
 % Pega numa fila e substitui todas as variaveis por Bit
 %-----------------------------------------------------------------------------
-substitui_var_puzzle([],[],_,0,_):-!.
+substitui_var_puzzle([],[],0):-!.
+
+substitui_var_puzzle([A|Puz],[A1|Puz],Bit):-
+  findall(X, (member(X,A), var(X)), Bag),
+  length(Bag,Num), Num\==0,
+  substitui_var(A,A1,Bit), !.
+substitui_var_puzzle([A|Puz],[A|N_Puz],Bit):-
+  findall(X, (member(X,A), var(X)), Bag),
+  length(Bag,Num), Num==0,
+  substitui_var_puzzle(Puz,N_Puz,Bit), !.
+
+/*substitui_var_puzzle([],[],_,0,_):-!.
 substitui_var_puzzle([A|R1],[B|R2],Bit,X,Y1):-
   substitui_var(A,B,Bit), !,
   substitui_var_puzzle(R1,R2,Bit,X1,Y1), X is X1+1.
 substitui_var_puzzle([A|R1],[B|R1],Bit,1,Y):-
-  substitui_var(A,B,Bit), length(A,Num), Y=<Num, !.
+  substitui_var(A,B,Bit), length(A,Num), Y=<Num, !.*/
 
 
 %-----------------------------------------------------------------------------
@@ -234,7 +245,7 @@ propaga_posicoes([],Novo,Novo) :- !.
 propaga_posicoes([(X,Y)|R],Puz,N_Puz):-
   escolhe_fila(X,Puz,N_aux,Lst1), mat_transposta(N_aux, N_T_aux),
   escolhe_fila(Y,N_T_aux,N,Lst2), mat_transposta(N, Novo),
-  append(Lst1,Lst2,Lst),append(Lst,R,L_aux),
+  append(Lst1,Lst2,Lst), append(Lst,R,L_aux),
   propaga_posicoes(L_aux,Novo,N_Puz), !.
 
 %-----------------------------------------------------------------------------
@@ -243,7 +254,7 @@ propaga_posicoes([(X,Y)|R],Puz,N_Puz):-
 % ser utilizado o algoritmo apresentado na Seccao 1.
 %-----------------------------------------------------------------------------
 resolve(Puz,Puz):-
-  conta_elementos_Puz(Puz,Num1), Num1==0, !.
+  conta_var_Puz(Puz,Num1), Num1==0, !.
 
 resolve(Puz,Novo):-
   inicializa(Puz,N_Puz),verifica_R3(N_Puz),
