@@ -72,10 +72,7 @@ substitui_var([A|Fila],[A|N_Fila],Bit, Y1) :-
 % por Bit.
 %-----------------------------------------------------------------------------
 substitui_t_var(Fila,N_Fila,Bit):-
-	substitui_var(Fila,N_Fila,Bit,_), cmp_filas(Fila,N_Fila),!.
-substitui_t_var(Fila,N_Fila,Bit):-
-  substitui_var(Fila,Aux,Bit,_),
-  substitui_t_var(Aux,N_Fila,Bit), !.
+  duplicate_term(Fila,N_Fila),include(=(Bit),N_Fila),!.
 
 %-----------------------------------------------------------------------------
 % verifica_R3_aux(Puz):
