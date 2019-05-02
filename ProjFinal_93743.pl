@@ -8,7 +8,7 @@
 %-----------------------------  Funcoes Compara  -----------------------------
 %-----------------------------------------------------------------------------
 % cmp_filas(Fila1, Fila2):
-% Compara se 2 filas sao iguais, i.e, se sao do mesmo tipo e iguais.
+% Compara se 2 filas sao iguais, i.e, se sao do mesmo tipo e iguais em valor.
 % (lembrando que _3==_4 da false)
 %-----------------------------------------------------------------------------
 cmp_filas([A|Fila1],[B|Fila2]):-
@@ -72,49 +72,48 @@ substitui_var([A|Fila],[A|N_Fila],Bit, Y1) :-
 % por Bit.
 %-----------------------------------------------------------------------------
 substitui_t_var(Fila,N_Fila,Bit):-
-  duplicate_term(Fila,N_Fila),include(=(Bit),N_Fila),!.
+  duplicate_term(Fila,N_Fila), include(=(Bit),N_Fila), !.
 
 %-----------------------------------------------------------------------------
 % verifica_R3_aux(Puz):
-%   Verifica se a primeira linha de um Puz e igual a uma outra linha do mesmo
+%   Verifica se a primeira linha de um Puz e igual a uma outra linha do mesmo.
 %-----------------------------------------------------------------------------
 verifica_R3_aux([]):- !.
 verifica_R3_aux([X|R]):-
   cmp_fila_puzzle(X,R), verifica_R3_aux(R), !.
 
 %-----------------------------------------------------------------------------
-% pos_alteradas_fila(Coord-X,Coord-Y,Fila, N_Fila,Lst):
+% pos_alteradas_fila(Coord-X,Coord-Y, Fila1, Fila2,Lst):
 %   Vai verificar na fila quais as posicoes que foram alteradas e colocar na
 % lista Lst. Neste caso, Coord-X vai ser constante e Coord-Y vai alterar-se.
 %-----------------------------------------------------------------------------
 pos_alteradas_fila(_,_,[], [],[]) :- !.
-pos_alteradas_fila(X,Y, [A|Fila], [B|N_Fila],Lst_aux) :-
+pos_alteradas_fila(X,Y, [A|Fila1], [B|Fila2],Lst_aux) :-
   Y1 is Y +1,
   (\+mesmo_tipo(A,B), Lst_aux=[(X,Y)|Lst]; Lst_aux=Lst),
-  pos_alteradas_fila(X,Y1,Fila,N_Fila,Lst), !.
+  pos_alteradas_fila(X,Y1,Fila,Fila2,Lst), !.
 
 %-----------------------------------------------------------------------------
-% escolhe_fila(Linha,Puz,N_Puz,Contador):
-%   De acordo com a linha introduzida, escolhe_fila vai a essa fila, e ira
-% aplicar a regra R1 e R2 a fila. Se nao for igual, aumenta o contador e a linha
-% nao modificada vai se juntar a N_Puz.
+% escolhe_fila(Coord-X,Puz,N_Puz,Lst):
+%   De acordo com a Coord-X, nth1 vai buscar a linha da Coord-X e aplica_R1_R2
+% _fila, returnando N_Puz com a fila alterada e Lst com os elem. alterados
 %-----------------------------------------------------------------------------
 escolhe_fila(X,Puz,N_Puz,Lst):-
-  nth1(X,Puz,Y), aplica_R1_R2_fila(Y,Y1),
-  pos_alteradas_fila(X,1,Y,Y1,Lst),
-  mat_muda_linha(Puz,X,Y1,N_Puz), !.
+  nth1(X,Puz,Fila), aplica_R1_R2_fila(Fila,N_Fila),
+  pos_alteradas_fila(X,1,Fila,N_Fila,Lst),
+  mat_muda_linha(Puz,X,N_Fila,N_Puz), !.
 
 %-----------------------------------------------------------------------------
-% muda_coordenadas(Posicoes):
-%   Verifica se a primeira linha de um Puz e igual a uma outra linha do mesmo
+% muda_coordenadas(Lst):
+%   Lst e uma lista contendo (L,C). A funcao troca (L,C) para (C,L).
 %-----------------------------------------------------------------------------
 muda_coordenadas([],[]):-!.
 muda_coordenadas([(L,C)|R],[(C,L)|Novo]):-
     muda_coordenadas(R,Novo),!.
 
 %-----------------------------------------------------------------------------
-% substitui_t_var(Fila, Bit, N_fila):
-% Pega numa fila e substitui todas as variaveis por Bit
+% induz_num_var(Fila, Bit, N_Fila):
+%   Introduz um Bit na primeira variavel que encontrar. N_Fila e essa alteracao.
 %-----------------------------------------------------------------------------
 induz_num_var([],[],_,0,_):-!.
 induz_num_var([A|R1],[B|R2],Bit,X,Y1):-
@@ -167,17 +166,17 @@ aplica_R1_fila(Fila,N_Fila):-
   aplica_R1_fila_aux(Fila,N_aux), aplica_R1_fila(N_aux,N_Fila), !.
 
 %-----------------------------------------------------------------------------
-% aplica_R2_fila(Fila, N_Fila):       NOMES
+% aplica_R2_fila(Fila, N_Fila):
 %   Fila e uma fila (linha ou coluna) de um puzzle, significa que N_Fila e a
 % fila resultante de aplicar a regra 2 a fila Fila.
 %-----------------------------------------------------------------------------
 aplica_R2_fila(Fila,Fila):-
-  conta_elementos(Fila,0,Num1,Na), Num1<Na/2,
-  conta_elementos(Fila,1,Num2,Na), Num2<Na/2, !.
+  conta_elementos(Fila,0,Num1,Tam), Num1<Tam/2,
+  conta_elementos(Fila,1,Num2,Tam), Num2<Tam/2, !.
 
 aplica_R2_fila(Fila,N_Fila):-
-  (Bit=0, conta_elementos(Fila,Bit,Num,Na), Num=:=Na/2;
-  Bit=1, conta_elementos(Fila,Bit,Num,Na), Num=:=Na/2), !,
+  (Bit=0, conta_elementos(Fila,Bit,Num,Tam), Num=:=Tam/2;
+  Bit=1, conta_elementos(Fila,Bit,Num,Tam), Num=:=Tam/2), !,
   troca_num(Bit,N_Bit), substitui_t_var(Fila,N_Fila,N_Bit).
 
 %-----------------------------------------------------------------------------
