@@ -27,12 +27,7 @@ mesmo_tipo(A,B):- number(A), !, number(B).
 conta_elementos_Fila(Fila, Bit, Num, Tamanho):-
     findall(X, (member(X,Fila), X==Bit), Bag),
     length(Fila, Tamanho), length(Bag, Num), !.
-
-conta_var_Fila(Fila,Num1):-
-  findall(Y,(member(Y,Fila),var(Y)), Bag),
-  length(Bag,Num1), !.
-
-
+    
 conta_var_Puz(Puz,Num1):-
   findall(Y,(member(X,Puz),member(Y,X),var(Y)),Bag),
   length(Bag,Num1), !.
@@ -95,13 +90,13 @@ induz(X,Y,Puz,NPuz,Bit,Lst):-
   mat_dimensoes(Puz,Num_Lins,_),Y>Num_Lins,
   X1 is X+1, induz(X1,1,Puz,NPuz,Bit,Lst), !.
 
-induz(X,Y,Puz,NPuz,Bit,Lst):-
+induz(X,Y,Puz,NPuz,Bit,[(X,Y)]):-
   mat_ref(Puz,(X,Y),Cont), var(Cont),
   mat_muda_posicao(Puz,(X,Y),Bit,NPuz),!.
 
 induz(X,Y,Puz,NPuz,Bit,Lst):-
-  mat_ref(Puz,(X,Y),Cont), Y1 is Y+1,
-  induz(X,Y1,Puz,NPuz,Bit,Lst), !.
+  mat_ref(Puz,(X,Y),Cont), number(Cont),
+  Y1 is Y+1, induz(X,Y1,Puz,NPuz,Bit,Lst), !.
 %-----------------------------------------------------------------------------
 % pos_alteradas_fila(Coord-X,Coord-Y,Fila, N_Fila,Lst):
 %   Vai verificar na fila quais as posicoes que foram alteradas e colocar na
@@ -256,11 +251,11 @@ resolve(Puz,Puz):-
 
 resolve(Puz,Novo):-
   inicializa(Puz,N_Puz),verifica_R3(N_Puz),
-  induz(1,N_Puz,N_aux,0,Lst),
+  induz(1,1,N_Puz,N_aux,0,Lst),
   propaga_posicoes(Lst,N_aux,Sol),
   resolve(Sol,Novo), !.
 resolve(Puz,Novo):-
   inicializa(Puz,N_Puz),verifica_R3(N_Puz),
-  induz(1,N_Puz,N_aux,1,Lst),
+  induz(1,1,N_Puz,N_aux,1,Lst),
   propaga_posicoes(Lst,N_aux,Sol),
   resolve(Sol,Novo), !.
