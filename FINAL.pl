@@ -5,11 +5,38 @@
 :- consult(codigo_comum). %Acessar ficheiro disponibilizado
 
 %----------------------------  Funcoes Auxiliares  ----------------------------
+%-----------------------------  Funcoes Compara  -----------------------------
+%-----------------------------------------------------------------------------
+% cmp_filas(Fila1, Fila2):
+% Compara se 2 filas sao iguais, i.e, se sao do mesmo tipo e iguais.
+% (lembrando que _3==_4 da false)
+%-----------------------------------------------------------------------------
+cmp_filas([A|Fila1],[B|Fila2]):-
+  mesmo_tipo(A,B), A==B, cmp_filas(Fila1,Fila2), !.
+
+%-----------------------------------------------------------------------------
+% cmp_puzzles(Fila, Puz):
+% Compara se 2 Puzzles sao iguais, linha por linha.
+%-----------------------------------------------------------------------------
+cmp_puzzles(Puzzle1,Puzzle2):-
+  maplist(cmp_filas,Puzzle1,Puzzle2), !.
+
+%-----------------------------------------------------------------------------
+% cmp_fila_puzzle(Fila, Puz):
+% Compara se 1 fila e igual as filas restantes do Puz.
+%-----------------------------------------------------------------------------
+cmp_fila_puzzle(_,[]):- !.
+cmp_fila_puzzle(X,[Y|R]):-
+  \+cmp_filas(X,Y), !, cmp_fila_puzzle(X,R).
+
+%-----------------------------------------------------------------------------
+
 %-----------------------------------------------------------------------------
 % troca_num(Num, N_Num):
 %   Pega no Num e troca o valor do bit para N_Num (0 para 1, 1 para 0).
 %-----------------------------------------------------------------------------
-troca_num(X,Y):- abs(X-1,Y), !.
+troca_num(1,0):- !.
+troca_num(0,1):- !.
 
 %-----------------------------------------------------------------------------
 % mesmo_tipo(A,B):
@@ -27,37 +54,6 @@ mesmo_tipo(A,B) :- number(A), !, number(B).
 conta_elementos(Fila, Bit, Num, Tamanho):-
     findall(X, (member(X,Fila), X==Bit), Bag),
     length(Fila, Tamanho), length(Bag, Num), !.
-
-%-----------------------------------------------------------------------------
-% cmp_filas(Fila1, Fila2):
-% Compara se 2 filas sao iguais, i.e, se sao do mesmo tipo e iguais.
-% (lembrando que _3==_4 da false)
-%-----------------------------------------------------------------------------
-cmp_elementos(A,B):-
-  mesmo_tipo(A,B), A==B, !.
-
-%-----------------------------------------------------------------------------
-% cmp_filas(Fila1, Fila2):
-% Compara se 2 filas sao iguais, i.e, se sao do mesmo tipo e iguais.
-% (lembrando que _3==_4 da false)
-%-----------------------------------------------------------------------------
-cmp_filas(Fila1,Fila2):-
-  maplist(cmp_elementos,Fila1,Fila2), !.
-
-%-----------------------------------------------------------------------------
-% cmp_puzzles(Fila, Puz):
-% Compara se 2 Puzzles sao iguais, linha por linha.
-%-----------------------------------------------------------------------------
-cmp_puzzles(Puzzle1,Puzzle2):-
-  maplist(cmp_filas,Puzzle1,Puzzle2), !.
-
-%-----------------------------------------------------------------------------
-% cmp_fila_puzzle(Fila, Puz):
-% Compara se 1 fila e igual as filas restantes do Puz.
-%-----------------------------------------------------------------------------
-cmp_fila_puzzle(_,[]):- !.
-cmp_fila_puzzle(X,[Y|R]):-
-  \+cmp_filas(X,Y), !, cmp_fila_puzzle(X,R).
 
 %-----------------------------------------------------------------------------
 % substitui_var(Fila, N_Fila, Bit, Coord-Y):
@@ -82,6 +78,14 @@ substitui_t_var(Fila,N_Fila,Bit):-
   substitui_t_var(Aux,N_Fila,Bit), !.
 
 %-----------------------------------------------------------------------------
+% verifica_R3_aux(Puz):
+%   Verifica se a primeira linha de um Puz e igual a uma outra linha do mesmo
+%-----------------------------------------------------------------------------
+verifica_R3_aux([]):- !.
+verifica_R3_aux([X|R]):-
+  cmp_fila_puzzle(X,R), verifica_R3_aux(R), !.
+
+%-----------------------------------------------------------------------------
 % pos_alteradas_fila(Coord-X,Coord-Y,Fila, N_Fila,Lst):
 %   Vai verificar na fila quais as posicoes que foram alteradas e colocar na
 % lista Lst. Neste caso, Coord-X vai ser constante e Coord-Y vai alterar-se.
@@ -102,14 +106,6 @@ escolhe_fila(X,Puz,N_Puz,Lst):-
   nth1(X,Puz,Y), aplica_R1_R2_fila(Y,Y1),
   pos_alteradas_fila(X,1,Y,Y1,Lst),
   mat_muda_linha(Puz,X,Y1,N_Puz), !.
-
-%-----------------------------------------------------------------------------
-% verifica_R3_aux(Puz):
-%   Verifica se a primeira linha de um Puz e igual a uma outra linha do mesmo
-%-----------------------------------------------------------------------------
-verifica_R3_aux([]):- !.
-verifica_R3_aux([X|R]):-
-  cmp_fila_puzzle(X,R), verifica_R3_aux(R), !.
 
 %-----------------------------------------------------------------------------
 % muda_coordenadas(Posicoes):
@@ -158,8 +154,7 @@ aplica_R1_triplo(Fila,N_Fila):-
 %   Fila e uma fila (linha ou coluna) de um puzzle, significa que N_Fila e a
 % fila resultante de aplicar a regra 1 a fila Fila, uma so vez.
 %-----------------------------------------------------------------------------
-aplica_R1_fila_aux(Fila,Fila):-
-  length(Fila,Num), Num<3, !.
+aplica_R1_fila_aux(Fila,Fila):- length(Fila,Num), Num<3, !.
 aplica_R1_fila_aux([X,Y,Z|Re],[X1|N_Fila_aux]):-
   aplica_R1_triplo([X,Y,Z],[X1,Y1,Z1]),
   aplica_R1_fila_aux([Y1,Z1|Re],N_Fila_aux), !.
