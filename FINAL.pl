@@ -92,11 +92,6 @@ pos_alteradas_fila(X,Y, [A|Fila], [B|N_Fila],Lst_aux) :-
   (\+mesmo_tipo(A,B), Lst_aux=[(X,Y)|Lst]; Lst_aux=Lst),
   pos_alteradas_fila(X,Y1,Fila,N_Fila,Lst), !.
 
-pos_alteradas_coluna(_,_,[], [],[]) :- !.
-pos_alteradas_coluna(X,Y, [A|Fila], [B|N_Fila],Lst_aux) :-
-  Y1 is Y +1,
-  (\+mesmo_tipo(A,B), Lst_aux=[(Y,X)|Lst]; Lst_aux=Lst),
-  pos_alteradas_coluna(X,Y1,Fila,N_Fila,Lst), !.
 %-----------------------------------------------------------------------------
 % escolhe_fila(Linha,Puz,N_Puz,Contador):
 %   De acordo com a linha introduzida, escolhe_fila vai a essa fila, e ira
@@ -108,11 +103,6 @@ escolhe_fila(X,Puz,N_Puz,Lst):-
   pos_alteradas_fila(X,1,Y,Y1,Lst),
   mat_muda_linha(Puz,X,Y1,N_Puz), !.
 
-escolhe_coluna(X,Puz,N_Puz,Lst):-
-  nth1(X,Puz,Y), aplica_R1_R2_fila(Y,Y1),
-  pos_alteradas_coluna(X,1,Y,Y1,Lst),
-  mat_muda_linha(Puz,X,Y1,N_Puz), !.
-
 %-----------------------------------------------------------------------------
 % verifica_R3_aux(Puz):
 %   Verifica se a primeira linha de um Puz e igual a uma outra linha do mesmo
@@ -120,6 +110,14 @@ escolhe_coluna(X,Puz,N_Puz,Lst):-
 verifica_R3_aux([]):- !.
 verifica_R3_aux([X|R]):-
   cmp_fila_puzzle(X,R), verifica_R3_aux(R), !.
+
+%-----------------------------------------------------------------------------
+% muda_coordenadas(Posicoes):
+%   Verifica se a primeira linha de um Puz e igual a uma outra linha do mesmo
+%-----------------------------------------------------------------------------
+muda_coordenadas([],[]):-!.
+muda_coordenadas([(L,C)|R],[(C,L)|Novo]):-
+    muda_coordenadas(R,Novo),!.
 
 %-----------------------------------------------------------------------------
 % substitui_t_var(Fila, Bit, N_fila):
@@ -244,10 +242,9 @@ verifica_R3(Puz):-
 propaga_posicoes([],Novo,Novo) :- !.
 propaga_posicoes([(X,Y)|R],Puz,N_Puz):-
   escolhe_fila(X,Puz,N_aux,Lst1), mat_transposta(N_aux, N_T_aux),
-  escolhe_coluna(Y,N_T_aux,N,Lst2), mat_transposta(N, Novo),
-
-  append(Lst1,Lst2,Lst), append(Lst,R,L_aux),
-  propaga_posicoes(L_aux,Novo,N_Puz), !.
+  escolhe_fila(Y,N_T_aux,N,Lst2_a), mat_transposta(N, Novo),
+  muda_coordenadas(Lst2_a,Lst2), append(Lst1,Lst2,Lst),
+  append(Lst,R,L_aux), propaga_posicoes(L_aux,Novo,N_Puz), !.
 
 %-----------------------------------------------------------------------------
 % resolve(Puz,Sol):
