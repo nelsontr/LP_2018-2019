@@ -9,7 +9,7 @@
 % troca_num(Num, N_Num):
 %   Pega no Num e troca o valor do bit para N_Num (0 para 1, 1 para 0).
 %-----------------------------------------------------------------------------
-troca_num(X,Y):- abs(X-1,Y), !.
+troca_num(X,Y):- (X==0;X==1), abs(X-1,Y), !.
 
 %-----------------------------------------------------------------------------
 % mesmo_tipo(A,B):
@@ -31,6 +31,7 @@ conta_elementos_Fila(Fila, Bit, Num, Tamanho):-
 conta_var_Fila(Fila,Num1):-
   findall(Y,(member(Y,Fila),var(Y)), Bag),
   length(Bag,Num1), !.
+
 
 conta_var_Puz(Puz,Num1):-
   findall(Y,(member(X,Puz),member(Y,X),var(Y)),Bag),
@@ -58,9 +59,8 @@ cmp_fila_puzzle(X,[Y|R]):-
 % cmp_puzzles(Fila, Puz):
 % Compara se 2 Puzzles sao iguais, linha por linha.
 %-----------------------------------------------------------------------------
-cmp_puzzles([],[]):-!.
-cmp_puzzles([X|Puzzle1],[Y|Puzzle2]):-
-  cmp_filas(X,Y), cmp_puzzles(Puzzle1,Puzzle2),!.
+cmp_puzzles(Puzzle1,Puzzle2):-
+  maplist(cmp_filas,Puzzle1,Puzzle2), !.
 
 %-----------------------------------------------------------------------------
 % substitui_var(Fila, N_Fila, Bit, Coord-Y):
@@ -79,30 +79,29 @@ substitui_var([A|Fila],[A|N_Fila],Bit) :-
 % por Bit.
 %-----------------------------------------------------------------------------
 substitui_t_var(Fila,N_Fila,Bit):-
-	substitui_var(Fila,N_Fila,Bit), cmp_filas(Fila,N_Fila),!.
-substitui_t_var(Fila,N_Fila,Bit):-
-  substitui_var(Fila,Aux,Bit),
-  substitui_t_var(Aux,N_Fila,Bit), !.
+	(substitui_var(Fila,N_Fila,Bit), cmp_filas(Fila,N_Fila)
+          ;
+  substitui_var(Fila,Aux,Bit), substitui_t_var(Aux,N_Fila,Bit)), !.
 
 %-----------------------------------------------------------------------------
 % substitui_t_var(Fila, Bit, N_fila):
 % Pega numa fila e substitui todas as variaveis por Bit
 %-----------------------------------------------------------------------------
-induz(_,[],[],_,_):-!.
-induz(_,Puz,Puz,_,[]):- conta_var_Puz(Puz,Num),Num==0,!.
+induz(X,Y,Puz,Puz,_,_):-
+  mat_dimensoes(Puz,Num_Lins,Num_Cols),Y>Num_Lins,
+  X=Num_Cols, !.
 
-induz(X,Puz,NPuz,Bit,Lst):-
-  nth1(X,Puz,Fila), substitui_var(Fila,N_Fila,Bit),
-  conta_var_Fila(Fila,N1), conta_var_Fila(N_Fila,N2),
-  N2==N1, Xaux is X+1,
-  induz(Xaux,Puz,NPuz,Bit,Lst), !.
+induz(X,Y,Puz,NPuz,Bit,Lst):-
+  mat_dimensoes(Puz,Num_Lins,_),Y>Num_Lins,
+  X1 is X+1, induz(X1,1,Puz,NPuz,Bit,Lst), !.
 
-induz(X,Puz,NPuz,Bit,Lst):-
-  nth1(X,Puz,Fila), substitui_var(Fila,N_Fila,Bit),
-  conta_var_Fila(Fila,N1), conta_var_Fila(N_Fila,N2),
-  N1 is N2+1, mat_muda_linha(Puz,X,N_Fila,N_Puz),
-  escolhe_fila(X,N_Puz,NPuz,Lst), !.
+induz(X,Y,Puz,NPuz,Bit,Lst):-
+  mat_ref(Puz,(X,Y),Cont), var(Cont),
+  mat_muda_posicao(Puz,(X,Y),Bit,NPuz),!.
 
+induz(X,Y,Puz,NPuz,Bit,Lst):-
+  mat_ref(Puz,(X,Y),Cont), Y1 is Y+1,
+  induz(X,Y1,Puz,NPuz,Bit,Lst), !.
 %-----------------------------------------------------------------------------
 % pos_alteradas_fila(Coord-X,Coord-Y,Fila, N_Fila,Lst):
 %   Vai verificar na fila quais as posicoes que foram alteradas e colocar na
