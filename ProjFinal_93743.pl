@@ -5,50 +5,14 @@
 :- consult(codigo_comum). %Acessar ficheiro disponibilizado
 
 %----------------------------  Funcoes Auxiliares  ----------------------------
-%-----------------------------------------------------------------------------
-% troca_num(Num, N_Num):
-%   Pega no Num e troca o valor do bit para N_Num (0 para 1, 1 para 0).
-%-----------------------------------------------------------------------------
-troca_num(X,Y):- (X==0;X==1), abs(X-1,Y), !.
-
-%-----------------------------------------------------------------------------
-% mesmo_tipo(A,B):
-%   E verdade se A e B forem do mesmo tipo, i.e, se ambos sao numeros ou
-% se ambos sao variaveis.
-%-----------------------------------------------------------------------------
-mesmo_tipo(A,B):- var(A), !, var(B).
-mesmo_tipo(A,B):- number(A), !, number(B).
-
-%-----------------------------------------------------------------------------
-% conta_elementos(Fila, Bit, Num, Tamanho):
-%   Pega numa Fila e retorna Num, que e o numero de vezes que Bit esta na lista,
-% juntamente com o tamanho da Fila.
-%-----------------------------------------------------------------------------
-conta_elementos_Fila(Fila, Bit, Num, Tamanho):-
-    findall(X, (member(X,Fila), X==Bit), Bag),
-    length(Fila, Tamanho), length(Bag, Num), !.
-    
-conta_var_Puz(Puz,Num1):-
-  findall(Y,(member(X,Puz),member(Y,X),var(Y)),Bag),
-  length(Bag,Num1), !.
-
+%-----------------------------  Funcoes Compara  -----------------------------
 %-----------------------------------------------------------------------------
 % cmp_filas(Fila1, Fila2):
 % Compara se 2 filas sao iguais, i.e, se sao do mesmo tipo e iguais.
 % (lembrando que _3==_4 da false)
 %-----------------------------------------------------------------------------
-cmp_filas([],[]):- !.
 cmp_filas([A|Fila1],[B|Fila2]):-
-  mesmo_tipo(A,B), A==B, !,
-  cmp_filas(Fila1,Fila2).
-
-%-----------------------------------------------------------------------------
-% cmp_fila_puzzle(Fila, Puz):
-% Compara se 1 fila e igual as filas restantes do Puz.
-%-----------------------------------------------------------------------------
-cmp_fila_puzzle(_,[]):- !.
-cmp_fila_puzzle(X,[Y|R]):-
-  \+cmp_filas(X,Y), !, cmp_fila_puzzle(Y,R).
+  mesmo_tipo(A,B), A==B, cmp_filas(Fila1,Fila2), !.
 
 %-----------------------------------------------------------------------------
 % cmp_puzzles(Fila, Puz):
@@ -58,15 +22,49 @@ cmp_puzzles(Puzzle1,Puzzle2):-
   maplist(cmp_filas,Puzzle1,Puzzle2), !.
 
 %-----------------------------------------------------------------------------
+% cmp_fila_puzzle(Fila, Puz):
+% Compara se 1 fila e igual as filas restantes do Puz.
+%-----------------------------------------------------------------------------
+cmp_fila_puzzle(_,[]):- !.
+cmp_fila_puzzle(X,[Y|R]):-
+  \+cmp_filas(X,Y), !, cmp_fila_puzzle(X,R).
+
+%-----------------------------------------------------------------------------
+
+%-----------------------------------------------------------------------------
+% troca_num(Num, N_Num):
+%   Pega no Num e troca o valor do bit para N_Num (0 para 1, 1 para 0).
+%-----------------------------------------------------------------------------
+troca_num(1,0):- !.
+troca_num(0,1):- !.
+
+%-----------------------------------------------------------------------------
+% mesmo_tipo(A,B):
+%   E verdade se A e B forem do mesmo tipo, i.e, se ambos sao numeros ou
+% se ambos sao variaveis.
+%-----------------------------------------------------------------------------
+mesmo_tipo(A,B) :- var(A), !, var(B).
+mesmo_tipo(A,B) :- number(A), !, number(B).
+
+%-----------------------------------------------------------------------------
+% conta_elementos(Fila, Bit, Num, Tamanho):
+%   Pega numa Fila e retorna Num, que e o numero de vezes que Bit esta na lista,
+% juntamente com o tamanho da Fila.
+%-----------------------------------------------------------------------------
+conta_elementos(Fila, Bit, Num, Tamanho):-
+    findall(X, (member(X,Fila), X==Bit), Bag),
+    length(Fila, Tamanho), length(Bag, Num), !.
+
+%-----------------------------------------------------------------------------
 % substitui_var(Fila, N_Fila, Bit, Coord-Y):
 %   Retorna N_Fila onde sera Fila substituindo a primeira variavel por Bit.
 % Utilizado tambem para modificar so quando chegar a Coord-Y.
 %-----------------------------------------------------------------------------
-substitui_var([], [], _) :- !.
-substitui_var([A|Fila],[Bit|Fila],Bit) :-
+substitui_var([], [], _, 1) :- !.
+substitui_var([A|Fila],[Bit|Fila],Bit, 1) :-
   var(A), !.
-substitui_var([A|Fila],[A|N_Fila],Bit) :-
-  substitui_var(Fila, N_Fila, Bit), !.
+substitui_var([A|Fila],[A|N_Fila],Bit, Y1) :-
+  substitui_var(Fila, N_Fila, Bit, Y), Y1 is Y+1, !.
 
 %-----------------------------------------------------------------------------
 % substitui_t_var(Fila, N_Fila, Bit):
@@ -74,29 +72,16 @@ substitui_var([A|Fila],[A|N_Fila],Bit) :-
 % por Bit.
 %-----------------------------------------------------------------------------
 substitui_t_var(Fila,N_Fila,Bit):-
-	(substitui_var(Fila,N_Fila,Bit), cmp_filas(Fila,N_Fila)
-          ;
-  substitui_var(Fila,Aux,Bit), substitui_t_var(Aux,N_Fila,Bit)), !.
+  duplicate_term(Fila,N_Fila),include(=(Bit),N_Fila),!.
 
 %-----------------------------------------------------------------------------
-% substitui_t_var(Fila, Bit, N_fila):
-% Pega numa fila e substitui todas as variaveis por Bit
+% verifica_R3_aux(Puz):
+%   Verifica se a primeira linha de um Puz e igual a uma outra linha do mesmo
 %-----------------------------------------------------------------------------
-induz(X,Y,Puz,Puz,_,_):-
-  mat_dimensoes(Puz,Num_Lins,Num_Cols),Y>Num_Lins,
-  X=Num_Cols, !.
+verifica_R3_aux([]):- !.
+verifica_R3_aux([X|R]):-
+  cmp_fila_puzzle(X,R), verifica_R3_aux(R), !.
 
-induz(X,Y,Puz,NPuz,Bit,Lst):-
-  mat_dimensoes(Puz,Num_Lins,_),Y>Num_Lins,
-  X1 is X+1, induz(X1,1,Puz,NPuz,Bit,Lst), !.
-
-induz(X,Y,Puz,NPuz,Bit,[(X,Y)]):-
-  mat_ref(Puz,(X,Y),Cont), var(Cont),
-  mat_muda_posicao(Puz,(X,Y),Bit,NPuz),!.
-
-induz(X,Y,Puz,NPuz,Bit,Lst):-
-  mat_ref(Puz,(X,Y),Cont), number(Cont),
-  Y1 is Y+1, induz(X,Y1,Puz,NPuz,Bit,Lst), !.
 %-----------------------------------------------------------------------------
 % pos_alteradas_fila(Coord-X,Coord-Y,Fila, N_Fila,Lst):
 %   Vai verificar na fila quais as posicoes que foram alteradas e colocar na
@@ -107,6 +92,7 @@ pos_alteradas_fila(X,Y, [A|Fila], [B|N_Fila],Lst_aux) :-
   Y1 is Y +1,
   (\+mesmo_tipo(A,B), Lst_aux=[(X,Y)|Lst]; Lst_aux=Lst),
   pos_alteradas_fila(X,Y1,Fila,N_Fila,Lst), !.
+
 %-----------------------------------------------------------------------------
 % escolhe_fila(Linha,Puz,N_Puz,Contador):
 %   De acordo com a linha introduzida, escolhe_fila vai a essa fila, e ira
@@ -119,12 +105,24 @@ escolhe_fila(X,Puz,N_Puz,Lst):-
   mat_muda_linha(Puz,X,Y1,N_Puz), !.
 
 %-----------------------------------------------------------------------------
-% verifica_R3_aux(Puz):
+% muda_coordenadas(Posicoes):
 %   Verifica se a primeira linha de um Puz e igual a uma outra linha do mesmo
 %-----------------------------------------------------------------------------
-verifica_R3_aux([]):- !.
-verifica_R3_aux([X|R]):-
-  cmp_fila_puzzle(X,R), verifica_R3_aux(R), !.
+muda_coordenadas([],[]):-!.
+muda_coordenadas([(L,C)|R],[(C,L)|Novo]):-
+    muda_coordenadas(R,Novo),!.
+
+%-----------------------------------------------------------------------------
+% substitui_t_var(Fila, Bit, N_fila):
+% Pega numa fila e substitui todas as variaveis por Bit
+%-----------------------------------------------------------------------------
+induz_num_var([],[],_,0,_):-!.
+induz_num_var([A|R1],[B|R2],Bit,X,Y1):-
+  substitui_var(A,B,Bit,Y),
+  length(A,Num), Y>Num, !,
+  induz_num_var(R1,R2,Bit,X1,Y1), X is X1+1.
+induz_num_var([A|R1],[B|R1],Bit,1,Y):-
+  substitui_var(A,B,Bit,Y), length(A,Num), Y=<Num, !.
 
 
 %-------------------------------  MAIN PROGRAM  -------------------------------
@@ -140,21 +138,20 @@ aplica_R1_triplo(Fila,Fila):-
   length(Bag,Num), Num>=2, !.
 %Caso de ter um 1 e um 0
 aplica_R1_triplo(Fila,Fila):-
-  conta_elementos_Fila(Fila,0,1,_),
-  conta_elementos_Fila(Fila,1,1,_), !.
+  conta_elementos(Fila,0,1,_),
+  conta_elementos(Fila,1,1,_), !.
 %Casos em que apenas tem uma variavel ou nenhuma
 aplica_R1_triplo(Fila,N_Fila):-
-  (Bit=0, conta_elementos_Fila(Fila,0,2,_);
-  Bit=1, conta_elementos_Fila(Fila,1,2,_)), !,
-  troca_num(Bit,N_Bit), substitui_var(Fila,N_Fila,N_Bit).
+  (Bit=0, conta_elementos(Fila,0,2,_);
+  Bit=1, conta_elementos(Fila,1,2,_)), !,
+  troca_num(Bit,N_Bit), substitui_var(Fila,N_Fila,N_Bit,_).
 
 %-----------------------------------------------------------------------------
 % aplica_R1_fila_aux(Fila, N_Fila):
 %   Fila e uma fila (linha ou coluna) de um puzzle, significa que N_Fila e a
 % fila resultante de aplicar a regra 1 a fila Fila, uma so vez.
 %-----------------------------------------------------------------------------
-aplica_R1_fila_aux(Fila,Fila):-
-  length(Fila,Num), Num<3, !.
+aplica_R1_fila_aux(Fila,Fila):- length(Fila,Num), Num<3, !.
 aplica_R1_fila_aux([X,Y,Z|Re],[X1|N_Fila_aux]):-
   aplica_R1_triplo([X,Y,Z],[X1,Y1,Z1]),
   aplica_R1_fila_aux([Y1,Z1|Re],N_Fila_aux), !.
@@ -175,12 +172,12 @@ aplica_R1_fila(Fila,N_Fila):-
 % fila resultante de aplicar a regra 2 a fila Fila.
 %-----------------------------------------------------------------------------
 aplica_R2_fila(Fila,Fila):-
-  conta_elementos_Fila(Fila,0,Num1,Na), Num1<Na/2,
-  conta_elementos_Fila(Fila,1,Num2,Na), Num2<Na/2, !.
+  conta_elementos(Fila,0,Num1,Na), Num1<Na/2,
+  conta_elementos(Fila,1,Num2,Na), Num2<Na/2, !.
 
 aplica_R2_fila(Fila,N_Fila):-
-  (Bit=0, conta_elementos_Fila(Fila,Bit,Num,Na), Num=:=Na/2;
-  Bit=1, conta_elementos_Fila(Fila,Bit,Num,Na), Num=:=Na/2), !,
+  (Bit=0, conta_elementos(Fila,Bit,Num,Na), Num=:=Na/2;
+  Bit=1, conta_elementos(Fila,Bit,Num,Na), Num=:=Na/2), !,
   troca_num(Bit,N_Bit), substitui_t_var(Fila,N_Fila,N_Bit).
 
 %-----------------------------------------------------------------------------
@@ -237,25 +234,24 @@ verifica_R3(Puz):-
 propaga_posicoes([],Novo,Novo) :- !.
 propaga_posicoes([(X,Y)|R],Puz,N_Puz):-
   escolhe_fila(X,Puz,N_aux,Lst1), mat_transposta(N_aux, N_T_aux),
-  escolhe_fila(Y,N_T_aux,N,Lst2), mat_transposta(N, Novo),
-  append(Lst1,Lst2,Lst), append(Lst,R,L_aux),
-  propaga_posicoes(L_aux,Novo,N_Puz), !.
+  escolhe_fila(Y,N_T_aux,N,Lst2_a), mat_transposta(N, Novo),
+  muda_coordenadas(Lst2_a,Lst2), append(Lst1,Lst2,Lst),
+  append(Lst,R,L_aux), propaga_posicoes(L_aux,Novo,N_Puz), !.
 
 %-----------------------------------------------------------------------------
 % resolve(Puz,Sol):
 %   O Puzzle Sol e (um)a solucao do puzzle Puz. Na obtencao da solucao, deve
 % ser utilizado o algoritmo apresentado na Seccao 1.
 %-----------------------------------------------------------------------------
-resolve(Puz,Puz):-
-  conta_var_Puz(Puz,Num1), Num1==0, !.
+resolve(Fila,N_Puz):-
+  induz_num_var(Fila,N_Puz,_,_,_), cmp_puzzles(Fila,N_Puz), !.
 
 resolve(Puz,Novo):-
   inicializa(Puz,N_Puz),verifica_R3(N_Puz),
-  induz(1,1,N_Puz,N_aux,0,Lst),
-  propaga_posicoes(Lst,N_aux,Sol),
-  resolve(Sol,Novo), !.
-resolve(Puz,Novo):-
-  inicializa(Puz,N_Puz),verifica_R3(N_Puz),
-  induz(1,1,N_Puz,N_aux,1,Lst),
-  propaga_posicoes(Lst,N_aux,Sol),
-  resolve(Sol,Novo), !.
+  (induz_num_var(N_Puz,N_aux,0,X,Y),
+  propaga_posicoes([(X,Y)],N_aux,Sol),
+  resolve(Sol,Novo)
+        ;
+  induz_num_var(N_Puz,N_aux,1,X,Y),
+  propaga_posicoes([(X,Y)],N_aux,Sol),
+  resolve(Sol,Novo)), !.
