@@ -11,8 +11,9 @@
 % Compara se 2 filas sao iguais, i.e, se sao do mesmo tipo e iguais em valor.
 % (lembrando que _3==_4 da false)
 %-----------------------------------------------------------------------------
+cmp_filas([],[]):- !.
 cmp_filas([A|Fila1],[B|Fila2]):-
-  mesmo_tipo(A,B), A==B, cmp_filas(Fila1,Fila2), !.
+  mesmo_tipo(A,B), A==B, !, cmp_filas(Fila1,Fila2).
 
 %-----------------------------------------------------------------------------
 % cmp_puzzles(Fila, Puz):
@@ -91,7 +92,7 @@ pos_alteradas_fila(_,_,[], [],[]) :- !.
 pos_alteradas_fila(X,Y, [A|Fila1], [B|Fila2],Lst_aux) :-
   Y1 is Y +1,
   (\+mesmo_tipo(A,B), Lst_aux=[(X,Y)|Lst]; Lst_aux=Lst),
-  pos_alteradas_fila(X,Y1,Fila,Fila2,Lst), !.
+  pos_alteradas_fila(X,Y1,Fila1,Fila2,Lst), !.
 
 %-----------------------------------------------------------------------------
 % escolhe_fila(Coord-X,Puz,N_Puz,Lst):
