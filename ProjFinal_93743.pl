@@ -73,7 +73,7 @@ substitui_var([A|Fila],[A|N_Fila],Bit, Y1) :-
 % por Bit.
 %-----------------------------------------------------------------------------
 substitui_t_var(Fila,N_Fila,Bit):-
-  duplicate_term(Fila,N_Fila), include(=(Bit),N_Fila), !.
+  convlist([X,Y]>>((var(X), Y=Bit);number(X),Y=X),Fila,N_Fila), !.
 
 %-----------------------------------------------------------------------------
 % verifica_R3_aux(Puz):
@@ -174,7 +174,6 @@ aplica_R1_fila(Fila,N_Fila):-
 aplica_R2_fila(Fila,Fila):-
   conta_elementos(Fila,0,Num1,Tam), Num1<Tam/2,
   conta_elementos(Fila,1,Num2,Tam), Num2<Tam/2, !.
-
 aplica_R2_fila(Fila,N_Fila):-
   (Bit=0, conta_elementos(Fila,Bit,Num,Tam), Num=:=Tam/2;
   Bit=1, conta_elementos(Fila,Bit,Num,Tam), Num=:=Tam/2), !,
@@ -189,7 +188,7 @@ aplica_R1_R2_fila(Fila,N_Fila):-
   aplica_R1_fila(Fila,N_R1), aplica_R2_fila(N_R1,N_Fila), !.
 
 %-----------------------------------------------------------------------------
-% aplica_R1_R2_matriz(Puz, N_Puz):
+% aplica_R1_R2_aux(Puz, N_Puz):
 %   Puz e um puzzle, significa que N_Puz e o puzzle resultante de aplicar o
 % predicado aplica_R1_R2_fila, as linhas de Puz.
 %-----------------------------------------------------------------------------
