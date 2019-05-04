@@ -23,15 +23,15 @@ mesmo_tipo(A,B) :- number(A), !, number(B).
 %-----------------------------------------------------------------------------
 % conta_elementos(Fila, Bit, Num, Tamanho):
 %   Pega numa Fila e retorna Num, que e o numero de vezes que Bit esta na Fila,
-% juntamente com o tamanho da Fila.
+% juntamente com o tamanho da Fila (Tamanho).
 %-----------------------------------------------------------------------------
 conta_elementos(Fila, Bit, Num, Tamanho):-
-    findall(X, (member(X,Fila), X==Bit), Bag),
-    length(Fila, Tamanho), length(Bag, Num), !.
+  findall(X, (member(X,Fila), X==Bit), Bag),
+  length(Fila, Tamanho), length(Bag, Num), !.
 
 %-----------------------------------------------------------------------------
 % cmp_fila_puzzle(Fila, Puz):
-% Compara se 1 fila e igual as filas restantes do Puz.
+%   Compara se 1 fila e' igual as filas restantes do Puz.
 %-----------------------------------------------------------------------------
 cmp_fila_puzzle(_,[]):- !.
 cmp_fila_puzzle(X,[Y|R]):-
@@ -40,7 +40,7 @@ cmp_fila_puzzle(X,[Y|R]):-
 %-----------------------------------------------------------------------------
 % substitui_var(Fila, N_Fila, Bit, Coord-Y):
 %   Retorna N_Fila onde sera Fila substituindo a primeira variavel por Bit.
-% Utilizado tambem para modificar so quando chegar a Coord-Y.
+% Coord-Y e a coord na fila que foi alterado.
 %-----------------------------------------------------------------------------
 substitui_var([], [], _, 1) :- !.
 substitui_var([A|Fila],[Bit|Fila],Bit, 1) :-
@@ -54,7 +54,7 @@ substitui_var([A|Fila],[A|N_Fila],Bit, Y1) :-
 % por Bit.
 %-----------------------------------------------------------------------------
 substitui_t_var(Fila,N_Fila,Bit):-
-	substitui_var(Fila,N_Fila,Bit,_), Fila==N_Fila,!.
+  substitui_var(Fila,N_Fila,Bit,_), Fila==N_Fila,!.
 substitui_t_var(Fila,N_Fila,Bit):-
   substitui_var(Fila,Aux,Bit,_), substitui_t_var(Aux,N_Fila,Bit), !.
 
@@ -89,10 +89,10 @@ escolhe_fila(X,Puz,N_Puz,Lst):-
 
 %-----------------------------------------------------------------------------
 % muda_coordenadas(Lst):
-%   Lst e uma lista contendo (L,C). A funcao troca (L,C) para (C,L).
+%   Lst e uma lista contendo (C,L). A funcao troca (C,L) para (L,C).
 %-----------------------------------------------------------------------------
 muda_coordenadas([],[]):-!.
-muda_coordenadas([(L,C)|R],[(C,L)|Novo]):- muda_coordenadas(R,Novo),!.
+muda_coordenadas([(C,L)|R],[(L,C)|Novo]):- muda_coordenadas(R,Novo),!.
 
 %-----------------------------------------------------------------------------
 % induz_num_var(Puz, N_Puz, Bit, Coord-X, Coord-Y):
@@ -116,23 +116,23 @@ induz_num_var([A|R1],[B|R1],Bit,1,Y):-
 % ao triplo Triplo.
 %-----------------------------------------------------------------------------
 %Casos de ter mais do que uma variavel
-aplica_R1_triplo(Fila,Fila):-
-  findall(X,(member(X,Fila), var(X)), Bag),
+aplica_R1_triplo(Triplo,Triplo):-
+  findall(X,(member(X,Triplo), var(X)), Bag),
   length(Bag,Num), Num>=2, !.
 %Caso de ter um 1 e um 0
-aplica_R1_triplo(Fila,Fila):-
-  conta_elementos(Fila,0,1,_),
-  conta_elementos(Fila,1,1,_), !.
+aplica_R1_triplo(Triplo,Triplo):-
+  conta_elementos(Triplo,0,1,_),
+  conta_elementos(Triplo,1,1,_), !.
 %Casos em que apenas tem uma variavel ou nenhuma
-aplica_R1_triplo(Fila,N_Fila):-
-  (Bit=0, conta_elementos(Fila,0,2,_);
-  Bit=1, conta_elementos(Fila,1,2,_)), !,
-  troca_num(Bit,N_Bit), substitui_var(Fila,N_Fila,N_Bit,_).
+aplica_R1_triplo(Triplo,N_Triplo):-
+  (Bit=0, conta_elementos(Triplo,0,2,_);
+  Bit=1, conta_elementos(Triplo,1,2,_)), !,
+  troca_num(Bit,N_Bit), substitui_var(Triplo,N_Triplo,N_Bit,_).
 
 %-----------------------------------------------------------------------------
 % aplica_R1_fila_aux(Fila, N_Fila):
 %   Fila e uma fila (linha ou coluna) de um puzzle, significa que N_Fila e a
-% fila resultante de aplicar a regra 1 a fila Fila, uma so vez.
+% fila resultante de aplicar a regra 1 a Fila, uma so vez.
 %-----------------------------------------------------------------------------
 aplica_R1_fila_aux(Fila,Fila):- length(Fila,Num), Num<3, !.
 aplica_R1_fila_aux([X,Y,Z|Re],[X1|N_Fila_aux]):-
@@ -142,7 +142,7 @@ aplica_R1_fila_aux([X,Y,Z|Re],[X1|N_Fila_aux]):-
 %-----------------------------------------------------------------------------
 % aplica_R1_fila(Fila, N_Fila):
 %   Fila e uma fila (linha ou coluna) de um puzzle, significa que N_Fila e a
-% fila resultante de aplicar a regra 1 a fila Fila.
+% fila resultante de aplicar a regra 1 a Fila, ate nao alterar mais nada.
 %-----------------------------------------------------------------------------
 aplica_R1_fila(Fila,Fila):-
   aplica_R1_fila_aux(Fila,N_Fila), Fila==N_Fila, !.
@@ -152,7 +152,7 @@ aplica_R1_fila(Fila,N_Fila):-
 %-----------------------------------------------------------------------------
 % aplica_R2_fila(Fila, N_Fila):
 %   Fila e uma fila (linha ou coluna) de um puzzle, significa que N_Fila e a
-% fila resultante de aplicar a regra 2 a fila Fila.
+% fila resultante de aplicar a regra 2 a Fila.
 %-----------------------------------------------------------------------------
 aplica_R2_fila(Fila,Fila):-
   conta_elementos(Fila,0,Num1,Tam), Num1<Tam/2,
@@ -165,7 +165,7 @@ aplica_R2_fila(Fila,N_Fila):-
 %-----------------------------------------------------------------------------
 % aplica_R1_R2_fila(Fila, N_Fila):
 %   Fila e uma fila (linha ou coluna) de um puzzle, significa que N_Fila e a
-% fila resultante de aplicar a regra 2 a fila Fila.
+% fila resultante de aplicar a regra 1 e a regra 2 a Fila.
 %-----------------------------------------------------------------------------
 aplica_R1_R2_fila(Fila,N_Fila):-
   aplica_R1_fila(Fila,N_aux), aplica_R2_fila(N_aux,N_Fila), !.
@@ -190,13 +190,13 @@ aplica_R1_R2_puzzle(Puz,N_Puz):-
 
 %-----------------------------------------------------------------------------
 % inicializa(Puz, N_Puz):
-%   Puz e um puzzle, significa que N_Puz e o puzzle resultante de inicializar
+%   Puz e' um puzzle, significa que N_Puz e o puzzle resultante de inicializar
 % o puzzle Puz.
 %-----------------------------------------------------------------------------
 inicializa(Puz,Puz):-
   aplica_R1_R2_puzzle(Puz,N_Puz), Puz==N_Puz, !.
 inicializa(Puz,N_Puz):-
-  aplica_R1_R2_puzzle(Puz,N_Puz_aux), inicializa(N_Puz_aux,N_Puz), !.
+  aplica_R1_R2_puzzle(Puz,N_aux), inicializa(N_aux,N_Puz), !.
 
 %-----------------------------------------------------------------------------
 % verifica_R3(Puz):
