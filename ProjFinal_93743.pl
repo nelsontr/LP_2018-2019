@@ -22,7 +22,7 @@ mesmo_tipo(A,B) :- number(A), !, number(B).
 
 %-----------------------------------------------------------------------------
 % conta_elementos(Fila, Bit, Num, Tamanho):
-%   Pega numa Fila e retorna Num, que e o numero de vezes que Bit esta na lista,
+%   Pega numa Fila e retorna Num, que e o numero de vezes que Bit esta na Fila,
 % juntamente com o tamanho da Fila.
 %-----------------------------------------------------------------------------
 conta_elementos(Fila, Bit, Num, Tamanho):-
@@ -50,11 +50,13 @@ substitui_var([A|Fila],[A|N_Fila],Bit, Y1) :-
 
 %-----------------------------------------------------------------------------
 % substitui_t_var(Fila, N_Fila, Bit):
-% Pega numa Fila e retorna N_Fila, que e a substituicao de todas as variaveis
+%   Pega numa Fila e retorna N_Fila, que e a substituicao de todas as variaveis
 % por Bit.
 %-----------------------------------------------------------------------------
 substitui_t_var(Fila,N_Fila,Bit):-
-  convlist([X,Y]>>((var(X), Y=Bit);number(X),Y=X),Fila,N_Fila), !.
+	substitui_var(Fila,N_Fila,Bit,_), Fila==N_Fila,!.
+substitui_t_var(Fila,N_Fila,Bit):-
+  substitui_var(Fila,Aux,Bit,_), substitui_t_var(Aux,N_Fila,Bit), !.
 
 %-----------------------------------------------------------------------------
 % verifica_R3_aux(Puz):
@@ -65,12 +67,12 @@ verifica_R3_aux([X|R]):-
   cmp_fila_puzzle(X,R), verifica_R3_aux(R), !.
 
 %-----------------------------------------------------------------------------
-% pos_alteradas_fila(Coord-X,Coord-Y, Fila1, Fila2,Lst):
+% pos_alteradas_fila(Coord-X,Coord-Y, Fila1, Fila2, Lst):
 %   Vai verificar na fila quais as posicoes que foram alteradas e colocar na
 % lista Lst. Neste caso, Coord-X vai ser constante e Coord-Y vai alterar-se.
 %-----------------------------------------------------------------------------
 pos_alteradas_fila(_,_,[], [],[]) :- !.
-pos_alteradas_fila(X,Y, [A|Fila1], [B|Fila2],Lst_aux) :-
+pos_alteradas_fila(X,Y,[A|Fila1],[B|Fila2],Lst_aux) :-
   Y1 is Y +1,
   (\+mesmo_tipo(A,B), Lst_aux=[(X,Y)|Lst]; Lst_aux=Lst),
   pos_alteradas_fila(X,Y1,Fila1,Fila2,Lst), !.
@@ -90,12 +92,12 @@ escolhe_fila(X,Puz,N_Puz,Lst):-
 %   Lst e uma lista contendo (L,C). A funcao troca (L,C) para (C,L).
 %-----------------------------------------------------------------------------
 muda_coordenadas([],[]):-!.
-muda_coordenadas([(L,C)|R],[(C,L)|Novo]):-
-    muda_coordenadas(R,Novo),!.
+muda_coordenadas([(L,C)|R],[(C,L)|Novo]):- muda_coordenadas(R,Novo),!.
 
 %-----------------------------------------------------------------------------
-% induz_num_var(Fila, Bit, N_Fila):
-%   Introduz um Bit na primeira variavel que encontrar. N_Fila e essa alteracao.
+% induz_num_var(Puz, N_Puz, Bit, Coord-X, Coord-Y):
+%   Introduz um Bit na primeira variavel que encontrar. N_Puz e essa alteracao.
+% Coord-X, Coord-Y e a posicao alterada.
 %-----------------------------------------------------------------------------
 induz_num_var([],[],_,0,_):-!.
 induz_num_var([A|R1],[B|R2],Bit,X,Y1):-
@@ -166,7 +168,7 @@ aplica_R2_fila(Fila,N_Fila):-
 % fila resultante de aplicar a regra 2 a fila Fila.
 %-----------------------------------------------------------------------------
 aplica_R1_R2_fila(Fila,N_Fila):-
-  aplica_R1_fila(Fila,N_R1), aplica_R2_fila(N_R1,N_Fila), !.
+  aplica_R1_fila(Fila,N_aux), aplica_R2_fila(N_aux,N_Fila), !.
 
 %-----------------------------------------------------------------------------
 % aplica_R1_R2_aux(Puz, N_Puz):
@@ -175,7 +177,7 @@ aplica_R1_R2_fila(Fila,N_Fila):-
 %-----------------------------------------------------------------------------
 aplica_R1_R2_aux([],[]):- !.
 aplica_R1_R2_aux([X|R],[Y|N_aux]):-
-  aplica_R1_R2_aux(R,N_aux), aplica_R1_R2_fila(X,Y), !.
+  aplica_R1_R2_fila(X,Y), aplica_R1_R2_aux(R,N_aux), !.
 
 %-----------------------------------------------------------------------------
 % aplica_R1_R2_puzzle(Puz, N_Puz):
@@ -220,8 +222,7 @@ propaga_posicoes([(X,Y)|R],Puz,N_Puz):-
 
 %-----------------------------------------------------------------------------
 % resolve(Puz,Sol):
-%   O Puzzle Sol e (um)a solucao do puzzle Puz. Na obtencao da solucao, deve
-% ser utilizado o algoritmo apresentado na Seccao 1.
+%   O Puzzle Sol e (um)a solucao do puzzle Puz, utiliznado as func. anteriores.
 %-----------------------------------------------------------------------------
 resolve(Puz,N_Puz):-
   induz_num_var(Puz,N_Puz,_,_,_), Puz==N_Puz, !.
