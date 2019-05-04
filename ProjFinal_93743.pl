@@ -35,7 +35,7 @@ conta_elementos(Fila, Bit, Num, Tamanho):-
 %-----------------------------------------------------------------------------
 cmp_fila_puzzle(_,[]):- !.
 cmp_fila_puzzle(X,[Y|R]):-
-  \+cmp_filas(X,Y), !, cmp_fila_puzzle(X,R).
+  X\==Y, !, cmp_fila_puzzle(X,R).
 
 %-----------------------------------------------------------------------------
 % substitui_var(Fila, N_Fila, Bit, Coord-Y):
