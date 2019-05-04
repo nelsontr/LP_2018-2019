@@ -5,33 +5,6 @@
 :- consult(codigo_comum). %Acessar ficheiro disponibilizado
 
 %----------------------------  Funcoes Auxiliares  ----------------------------
-%-----------------------------  Funcoes Compara  -----------------------------
-%-----------------------------------------------------------------------------
-% cmp_filas(Fila1, Fila2):
-% Compara se 2 filas sao iguais, i.e, se sao do mesmo tipo e iguais em valor.
-% (lembrando que _3==_4 da false)
-%-----------------------------------------------------------------------------
-cmp_filas([],[]):- !.
-cmp_filas([A|Fila1],[B|Fila2]):-
-  mesmo_tipo(A,B), A==B, !, cmp_filas(Fila1,Fila2).
-
-%-----------------------------------------------------------------------------
-% cmp_puzzles(Fila, Puz):
-% Compara se 2 Puzzles sao iguais, linha por linha.
-%-----------------------------------------------------------------------------
-cmp_puzzles(Puzzle1,Puzzle2):-
-  maplist(cmp_filas,Puzzle1,Puzzle2), !.
-
-%-----------------------------------------------------------------------------
-% cmp_fila_puzzle(Fila, Puz):
-% Compara se 1 fila e igual as filas restantes do Puz.
-%-----------------------------------------------------------------------------
-cmp_fila_puzzle(_,[]):- !.
-cmp_fila_puzzle(X,[Y|R]):-
-  \+cmp_filas(X,Y), !, cmp_fila_puzzle(X,R).
-
-%-----------------------------------------------------------------------------
-
 %-----------------------------------------------------------------------------
 % troca_num(Num, N_Num):
 %   Pega no Num e troca o valor do bit para N_Num (0 para 1, 1 para 0).
@@ -55,6 +28,14 @@ mesmo_tipo(A,B) :- number(A), !, number(B).
 conta_elementos(Fila, Bit, Num, Tamanho):-
     findall(X, (member(X,Fila), X==Bit), Bag),
     length(Fila, Tamanho), length(Bag, Num), !.
+
+%-----------------------------------------------------------------------------
+% cmp_fila_puzzle(Fila, Puz):
+% Compara se 1 fila e igual as filas restantes do Puz.
+%-----------------------------------------------------------------------------
+cmp_fila_puzzle(_,[]):- !.
+cmp_fila_puzzle(X,[Y|R]):-
+  \+cmp_filas(X,Y), !, cmp_fila_puzzle(X,R).
 
 %-----------------------------------------------------------------------------
 % substitui_var(Fila, N_Fila, Bit, Coord-Y):
@@ -162,7 +143,7 @@ aplica_R1_fila_aux([X,Y,Z|Re],[X1|N_Fila_aux]):-
 % fila resultante de aplicar a regra 1 a fila Fila.
 %-----------------------------------------------------------------------------
 aplica_R1_fila(Fila,Fila):-
-  aplica_R1_fila_aux(Fila,N_Fila), cmp_filas(Fila,N_Fila), !.
+  aplica_R1_fila_aux(Fila,N_Fila), Fila==N_Fila, !.
 aplica_R1_fila(Fila,N_Fila):-
   aplica_R1_fila_aux(Fila,N_aux), aplica_R1_fila(N_aux,N_Fila), !.
 
@@ -210,10 +191,10 @@ aplica_R1_R2_puzzle(Puz,N_Puz):-
 %   Puz e um puzzle, significa que N_Puz e o puzzle resultante de inicializar
 % o puzzle Puz.
 %-----------------------------------------------------------------------------
-inicializa(Fila,Fila):-
-  aplica_R1_R2_puzzle(Fila,N_Fila), cmp_puzzles(Fila,N_Fila), !.
-inicializa(Fila,N_Puz):-
-  aplica_R1_R2_puzzle(Fila,N_Fila), inicializa(N_Fila,N_Puz), !.
+inicializa(Puz,Puz):-
+  aplica_R1_R2_puzzle(Puz,N_Puz), Puz==N_Puz, !.
+inicializa(Puz,N_Puz):-
+  aplica_R1_R2_puzzle(Puz,N_Puz_aux), inicializa(N_Puz_aux,N_Puz), !.
 
 %-----------------------------------------------------------------------------
 % verifica_R3(Puz):
@@ -242,8 +223,8 @@ propaga_posicoes([(X,Y)|R],Puz,N_Puz):-
 %   O Puzzle Sol e (um)a solucao do puzzle Puz. Na obtencao da solucao, deve
 % ser utilizado o algoritmo apresentado na Seccao 1.
 %-----------------------------------------------------------------------------
-resolve(Fila,N_Puz):-
-  induz_num_var(Fila,N_Puz,_,_,_), cmp_puzzles(Fila,N_Puz), !.
+resolve(Puz,N_Puz):-
+  induz_num_var(Puz,N_Puz,_,_,_), Puz==N_Puz, !.
 
 resolve(Puz,Novo):-
   inicializa(Puz,N_Puz),verifica_R3(N_Puz),
